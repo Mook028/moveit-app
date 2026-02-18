@@ -1,16 +1,50 @@
-# moveit
+#  MoveIT – Workout Management App
 
-A new Flutter project.
+MoveIT is a Flutter mobile application developed for the **Mobile Application Development** course.  
+The application helps users manage their workouts in a simple and clean interface.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## App Overview
 
-A few resources to get you started if this is your first Flutter project:
+MoveIT allows users to:
+- View a list of workouts
+- Add new workout items
+- Delete workouts
+- Manage activities easily
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+The app is designed with a clean UI and beginner-friendly structure using Flutter.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## Features
+
+- Workout List Display
+- Add New Workout
+- Delete Workout
+- Simple and Clean UI
+- Built with Flutter
+
+---
+
+## 🛠 Tech Stack
+
+| Technology | Description |
+|------------|------------|
+| Flutter | UI Toolkit for building cross-platform apps |
+| Dart | Programming Language |
+| Git | Version Control |
+| GitHub | Project Repository Hosting |
+| VS Code | Development Environment |
+
+---
+
+## Installation Guide
+
+To run this project locally:
+
+```bash
+git clone https://github.com/Mook028/moveit-app.git
+cd moveit-app
+flutter pub get
+flutter run
