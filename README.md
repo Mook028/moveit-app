@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #  MoveIT – Workout Management App
 
 MoveIT is a Flutter mobile application developed for the **Mobile Application Development** course.  
@@ -48,3 +49,7 @@ git clone https://github.com/Mook028/moveit-app.git
 cd moveit-app
 flutter pub get
 flutter run
+=======
+# moveit-app
+MoveIT - AI-assisted Flutter UI prototype for Mobile Application Development course.
+>>>>>>> 3ea9004 (Initial commit)
