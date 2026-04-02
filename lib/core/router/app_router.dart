@@ -43,21 +43,9 @@ final GoRouter appRouter = GoRouter(
     // If not logged in, allow only auth routes (login/register).
     if (!isLoggedIn && !isAuthRoute) return Routes.login;
 
-    // If logged in and currently on login page, choose landing by today's mood state.
-    if (isLoggedIn && matchedLocation == Routes.login) {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final lastActiveDate = appProvider.lastActiveDate;
-      final hasTodayContext =
-          lastActiveDate != null &&
-          lastActiveDate.year == today.year &&
-          lastActiveDate.month == today.month &&
-          lastActiveDate.day == today.day;
-      final hasSelectedTodayMood =
-          hasTodayContext &&
-          (appProvider.selectedMood?.trim().isNotEmpty ?? false);
-
-      return hasSelectedTodayMood ? Routes.home : Routes.mood;
+    // Keep login as first screen on app start.
+    if (matchedLocation == Routes.login) {
+      return null;
     }
 
     // Redirect once per day to Mood screen when a new day is detected.

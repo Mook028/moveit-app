@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/routes.dart';
 import '../../core/providers/app_provider.dart';
+import '../mood/mood_screen.dart';
 import 'auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -87,7 +88,14 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       if (mounted) {
-        context.go(Routes.login);
+        if (widget.isLogin) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const MoodScreen()),
+          );
+        } else {
+          context.go(Routes.login);
+        }
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
@@ -435,9 +443,20 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextButton(
                                 onPressed: () {
                                   if (widget.isLogin) {
-                                    context.go(Routes.register);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const LoginScreen(isLogin: false),
+                                      ),
+                                    );
                                   } else {
-                                    context.go(Routes.login);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const LoginScreen(),
+                                      ),
+                                    );
                                   }
                                 },
                                 style: TextButton.styleFrom(

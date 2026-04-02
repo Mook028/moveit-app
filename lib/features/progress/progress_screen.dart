@@ -369,9 +369,18 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               crossAxisCount: 7,
               childAspectRatio: 1,
             ),
-            itemCount: _getDaysInMonth(currentMonth),
+            itemCount:
+                _getDaysInMonth(currentMonth) +
+                (DateTime(currentMonth.year, currentMonth.month, 1).weekday %
+                    7),
             itemBuilder: (context, index) {
-              final day = index + 1;
+              final startWeekday =
+                  DateTime(currentMonth.year, currentMonth.month, 1).weekday %
+                  7;
+              if (index < startWeekday) {
+                return const SizedBox.shrink();
+              }
+              final day = index - startWeekday + 1;
               final date = DateTime(currentMonth.year, currentMonth.month, day);
               final isSelected =
                   date.day == selectedDate.day &&
