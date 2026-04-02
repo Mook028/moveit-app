@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/routes.dart';
 import '../../core/providers/app_provider.dart';
@@ -16,11 +17,20 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  static const String _rememberedEmailKey = 'remembered_login_email';
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   String? _error;
   bool _obscurePassword = true;
+  bool _rememberMe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberedEmail();
+  }
 
   @override
   void dispose() {
@@ -63,6 +73,10 @@ class _LoginScreenState extends State<LoginScreen> {
         await auth.register(email, password, name: name);
       }
 
+      if (widget.isLogin) {
+        await _saveRememberedEmailPreference(email);
+      }
+
       if (!mounted) return;
 
       // sync name to app provider
@@ -88,6 +102,30 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
     }
+  }
+
+  Future<void> _loadRememberedEmail() async {
+    if (!widget.isLogin) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString(_rememberedEmailKey);
+    if (!mounted) return;
+
+    if (savedEmail != null && savedEmail.isNotEmpty) {
+      setState(() {
+        _rememberMe = true;
+        _emailController.text = savedEmail;
+      });
+    }
+  }
+
+  Future<void> _saveRememberedEmailPreference(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setString(_rememberedEmailKey, email);
+      return;
+    }
+    await prefs.remove(_rememberedEmailKey);
   }
 
   String? _validateInputs({
@@ -161,14 +199,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       child: Stack(
                         children: [
-                          // Sky and Landscape Illustration
-                          CustomPaint(
-                            painter: SkyLandscapePainter(),
-                            size: Size(
-                              size.width,
-                              isMobile ? size.height * 0.30 : 200,
-                            ),
-                          ),
                           // Hello Text
                           Positioned(
                             left: 24,
@@ -263,67 +293,98 @@ class _LoginScreenState extends State<LoginScreen> {
                                     },
                                   ),
                                   const SizedBox(height: 8),
-                                  // Forgot Password Link (only on login)
+                                  // Remember Me + Forgot Password (only on login)
                                   if (widget.isLogin)
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: TextButton(
-                                        onPressed: loading
-                                            ? null
-                                            : () async {
-                                                final email = _emailController
-                                                    .text
-                                                    .trim();
-                                                if (email.isEmpty) {
-                                                  ScaffoldMessenger.of(
-                                                    context,
-                                                  ).showSnackBar(
-                                                    const SnackBar(
-                                                      content: Text(
-                                                        'Please enter your email to reset',
-                                                      ),
-                                                    ),
-                                                  );
-                                                  return;
-                                                }
-                                                try {
-                                                  await context
-                                                      .read<AuthProvider>()
-                                                      .resetPassword(email);
-                                                  if (mounted) {
+                                    Row(
+                                      children: [
+                                        Checkbox(
+                                          value: _rememberMe,
+                                          activeColor: const Color(0xFF2D8A75),
+                                          side: const BorderSide(
+                                            color: Color(0xFF9CC8BE),
+                                            width: 1.4,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          onChanged: loading
+                                              ? null
+                                              : (value) {
+                                                  setState(() {
+                                                    _rememberMe =
+                                                        value ?? false;
+                                                  });
+                                                },
+                                        ),
+                                        const Text(
+                                          'Remember me',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF5A7A76),
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        TextButton(
+                                          onPressed: loading
+                                              ? null
+                                              : () async {
+                                                  final email = _emailController
+                                                      .text
+                                                      .trim();
+                                                  if (email.isEmpty) {
                                                     ScaffoldMessenger.of(
                                                       context,
                                                     ).showSnackBar(
                                                       const SnackBar(
                                                         content: Text(
-                                                          'Password reset link sent',
+                                                          'Please enter your email to reset',
                                                         ),
                                                       ),
                                                     );
+                                                    return;
                                                   }
-                                                } catch (e) {
-                                                  if (mounted) {
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          e.toString(),
+                                                  try {
+                                                    await context
+                                                        .read<AuthProvider>()
+                                                        .resetPassword(email);
+                                                    if (mounted) {
+                                                      ScaffoldMessenger.of(
+                                                        context,
+                                                      ).showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text(
+                                                            'Password reset link sent',
+                                                          ),
                                                         ),
-                                                      ),
-                                                    );
+                                                      );
+                                                    }
+                                                  } catch (e) {
+                                                    if (mounted) {
+                                                      ScaffoldMessenger.of(
+                                                        context,
+                                                      ).showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                            e.toString(),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }
                                                   }
-                                                }
-                                              },
-                                        child: Text(
-                                          'Forgot password?',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: const Color(0xFF4A9D87),
+                                                },
+                                          child: Text(
+                                            'Forgot password?',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: const Color(0xFF4A9D87),
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                      ],
                                     ),
                                   const SizedBox(height: 24),
                                   // Sign In / Register Button

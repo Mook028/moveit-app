@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/task.dart';
 import '../../models/user.dart';
 import '../../services/user_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+enum TaskDayStatus { allComplete, someComplete, inProgress, none }
 
 class AppProvider extends ChangeNotifier {
   static const String _lastActiveDateKey = 'lastActiveDate';
 
   late UserProfile user;
   String? selectedMood;
+  bool _isMoodConfirmed = false;
+  bool get isMoodConfirmed => _isMoodConfirmed;
   List<Task> tasks = [];
   int dailyStreak = 0;
   int totalCompleted = 0;
@@ -20,10 +26,30 @@ class AppProvider extends ChangeNotifier {
   DateTime? _lastActiveDate;
   bool _hasCheckedDayBoundary = false;
   bool _shouldRedirectToMoodForNewDay = false;
+  final Set<int> _completionHistoryDateKeys = {};
 
   DateTime? get lastActiveDate => _lastActiveDate;
   bool get hasCheckedDayBoundary => _hasCheckedDayBoundary;
   bool get shouldRedirectToMoodForNewDay => _shouldRedirectToMoodForNewDay;
+
+  UserProfile? _userProfile;
+  UserProfile? get userProfile => _userProfile;
+
+  Future<void> loadUserProfile() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) return;
+
+    final user = await UserService().getUserProfile(uid);
+
+    _userProfile = user;
+
+    notifyListeners();
+  }
+
+  int _toDateKey(DateTime date) {
+    return DateTime(date.year, date.month, date.day).millisecondsSinceEpoch;
+  }
 
   AppProvider() {
     user = UserProfile(
@@ -46,6 +72,7 @@ class AppProvider extends ChangeNotifier {
 
   void _resetDailyStateForNewDay() {
     selectedMood = null;
+    _isMoodConfirmed = false;
     tasks = [];
     hasNavigatedToStatsToday = false;
   }
@@ -118,15 +145,79 @@ class AppProvider extends ChangeNotifier {
           user = UserProfile(name: firebaseUser.displayName ?? 'User');
           await _userService.createUserProfile(firebaseUser.uid, user.name);
         }
+        await refreshCompletionHistory(notify: false);
         notifyListeners();
       }
     });
   }
 
+  Future<void> refreshCompletionHistory({bool notify = true}) async {
+    if (_currentUserId == null) return;
+
+    final completionHistory = await _userService.getCompletionHistory(
+      _currentUserId!,
+    );
+    _completionHistoryDateKeys
+      ..clear()
+      ..addAll(completionHistory.map(_toDateKey));
+
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  List<Task> getTasksForDate(DateTime? date) {
+    if (date == null) return <Task>[];
+
+    final targetDate = DateTime(date.year, date.month, date.day);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    if (_isSameDate(targetDate, today)) {
+      return List<Task>.from(tasks);
+    }
+
+    return <Task>[];
+  }
+
+  TaskDayStatus getStatusForDate(DateTime? date) {
+    if (date == null) return TaskDayStatus.none;
+
+    final targetDate = DateTime(date.year, date.month, date.day);
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+
+    if (_isSameDate(targetDate, todayDate)) {
+      final dayTasks = getTasksForDate(targetDate);
+      if (dayTasks.isEmpty) return TaskDayStatus.none;
+
+      final completedCount = dayTasks.where((task) => task.completed).length;
+      if (completedCount >= dayTasks.length) return TaskDayStatus.allComplete;
+      if (completedCount > 0) return TaskDayStatus.someComplete;
+      return TaskDayStatus.inProgress;
+    }
+
+    if (_completionHistoryDateKeys.contains(_toDateKey(targetDate))) {
+      return TaskDayStatus.allComplete;
+    }
+
+    return TaskDayStatus.none;
+  }
+
+  TaskDayStatus getTaskStatusForDate(DateTime date) {
+    return getStatusForDate(date);
+  }
+
   void setMood(String mood) {
     selectedMood = mood;
+    _isMoodConfirmed = false;
     hasNavigatedToStatsToday = false;
     generateTasksByMood(mood);
+    notifyListeners();
+  }
+
+  void confirmMood() {
+    _isMoodConfirmed = true;
     notifyListeners();
   }
 
@@ -241,6 +332,7 @@ class AppProvider extends ChangeNotifier {
 
     // Record completion in Firestore
     await _userService.recordCompletion(_currentUserId!, today);
+    _completionHistoryDateKeys.add(_toDateKey(today));
 
     // Calculate new streak
     int newStreak = await _calculateStreak(_currentUserId!, today);
@@ -311,6 +403,59 @@ class AppProvider extends ChangeNotifier {
       await _userService.updateUserProfile(_currentUserId!, user);
     }
     notifyListeners();
+  }
+
+  Future<void> updateProfileName(String name) async {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty || _currentUserId == null) return;
+
+    user = user.copyWith(name: trimmedName);
+    notifyListeners();
+
+    await _userService.updateUserFields(_currentUserId!, {'name': trimmedName});
+  }
+
+  Future<void> updateProfilePhoto(XFile image) async {
+    if (_currentUserId == null) return;
+
+    final photoUrl = await _userService.uploadProfileImage(
+      _currentUserId!,
+      image,
+    );
+    user = user.copyWith(photoUrl: photoUrl);
+    notifyListeners();
+
+    await _userService.updateUserFields(_currentUserId!, {
+      'photoUrl': photoUrl,
+    });
+  }
+
+  /// Updates user profile with name and/or email changes
+  /// Called from EditProfileScreen when user saves changes
+  Future<void> updateUserProfile({String? name, String? email}) async {
+    if (_currentUserId == null) return;
+
+    // Update local user object using copyWith
+    if (name != null && name.trim().isNotEmpty) {
+      user = user.copyWith(name: name.trim());
+    }
+
+    // Notify listeners immediately after updating user object
+    notifyListeners();
+
+    // Prepare fields to update in Firestore
+    final Map<String, dynamic> fieldsToUpdate = {};
+    if (name != null && name.trim().isNotEmpty) {
+      fieldsToUpdate['name'] = name.trim();
+    }
+    if (email != null && email.trim().isNotEmpty) {
+      fieldsToUpdate['email'] = email.trim();
+    }
+
+    // Save to Firestore if there are fields to update
+    if (fieldsToUpdate.isNotEmpty) {
+      await _userService.updateUserFields(_currentUserId!, fieldsToUpdate);
+    }
   }
 
   bool shouldNavigateToStats() {

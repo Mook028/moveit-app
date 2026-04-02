@@ -43,10 +43,8 @@ final GoRouter appRouter = GoRouter(
     // If not logged in, allow only auth routes (login/register).
     if (!isLoggedIn && !isAuthRoute) return Routes.login;
 
-    // If logged in and currently on an auth page, choose landing by today's mood state.
-    if (isLoggedIn &&
-        (matchedLocation == Routes.login ||
-            matchedLocation == Routes.register)) {
+    // If logged in and currently on login page, choose landing by today's mood state.
+    if (isLoggedIn && matchedLocation == Routes.login) {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final lastActiveDate = appProvider.lastActiveDate;

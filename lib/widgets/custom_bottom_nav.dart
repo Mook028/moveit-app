@@ -28,10 +28,10 @@ class CustomBottomNav extends StatelessWidget {
         _navigate(context, routes[index]);
       },
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       selectedItemColor: AppTheme.primary,
       unselectedItemColor: Colors.grey[400],
-      elevation: 8,
+      elevation: 0,
       items: [
         _buildNavItem(Icons.emoji_emotions_outlined, 'Mood'),
         _buildNavItem(Icons.task_alt, 'Tasks'),

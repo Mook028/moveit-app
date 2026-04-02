@@ -30,8 +30,35 @@ class MoodButton extends StatelessWidget {
     }
   }
 
+  ({Color start, Color end, Color glow}) _getMoodPalette(String mood) {
+    switch (mood) {
+      case 'Energetic':
+        return (
+          start: const Color(0xFF34D058),
+          end: const Color(0xFF1FA24A),
+          glow: const Color(0xFF3AD66D),
+        );
+      case 'Normal':
+        return (
+          start: const Color(0xFFF7C948),
+          end: const Color(0xFFE8A61A),
+          glow: const Color(0xFFFFD970),
+        );
+      case 'Tired':
+        return (
+          start: const Color(0xFF6EB7FF),
+          end: const Color(0xFF3A8FDD),
+          glow: const Color(0xFF8DC9FF),
+        );
+      default:
+        return (start: color, end: color, glow: color);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final palette = _getMoodPalette(mood);
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -43,24 +70,56 @@ class MoodButton extends StatelessWidget {
             height: 96,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: color,
-              border: isSelected
-                  ? Border.all(color: AppTheme.primary, width: 4)
-                  : null,
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: AppTheme.primary.withAlpha(100),
-                        blurRadius: 16,
-                        spreadRadius: 2,
-                      ),
-                    ]
-                  : null,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [palette.start, palette.end],
+              ),
+              border: Border.all(
+                color: isSelected
+                    ? palette.glow.withOpacity(0.95)
+                    : Colors.white.withOpacity(0.55),
+                width: isSelected ? 3.0 : 1.4,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isSelected ? 0.22 : 0.14),
+                  blurRadius: isSelected ? 18 : 10,
+                  offset: Offset(0, isSelected ? 10 : 6),
+                ),
+                if (isSelected)
+                  BoxShadow(
+                    color: palette.glow.withOpacity(0.58),
+                    blurRadius: 26,
+                    spreadRadius: 4,
+                  ),
+              ],
             ),
             child: Center(
-              child: Text(
-                _getMoodEmoji(mood),
-                style: const TextStyle(fontSize: 40),
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.28),
+                      Colors.white.withOpacity(0.10),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.35),
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    _getMoodEmoji(mood),
+                    style: const TextStyle(fontSize: 40),
+                  ),
+                ),
               ),
             ),
           ),

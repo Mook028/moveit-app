@@ -12,95 +12,111 @@ class ProgressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: Consumer<AppProvider>(
-        builder: (context, provider, child) {
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.spacingMd,
-                vertical: AppTheme.spacingSm,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Top section: Greeting and Avatar
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: AppTheme.spacingMd,
-                        bottom: AppTheme.spacingLg,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFA8D5BA), Color(0xFFBFE3D0), Color(0xFFEAF5EF)],
+          ),
+        ),
+        child: Consumer<AppProvider>(
+          builder: (context, provider, child) {
+            final inProgress = provider.isMoodConfirmed
+                ? provider.tasks.where((t) => !t.completed).length
+                : 0;
+            final completed = provider.isMoodConfirmed
+                ? provider.tasks.where((t) => t.completed).length
+                : 0;
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.spacingMd,
+                  vertical: AppTheme.spacingSm,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Top section: Greeting and Avatar
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: AppTheme.spacingMd,
+                          bottom: AppTheme.spacingLg,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Hello, ${provider.user.name} 👋',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.headlineMedium,
+                                ),
+                              ],
+                            ),
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: AppTheme.primary,
+                              child: Text(
+                                provider.user.name[0],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                      // Streak Card
+                      StreakCard(streak: provider.dailyStreak),
+
+                      const SizedBox(height: AppTheme.spacingLg),
+
+                      // Task Summary Section
+                      Row(
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Hello, ${provider.user.name} 👋',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineMedium,
-                              ),
-                            ],
+                          Expanded(
+                            child: TaskSummaryCard(
+                              title: 'Completed',
+                              count: completed,
+                              color: Colors.green,
+                              icon: Icons.check_circle,
+                            ),
                           ),
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: AppTheme.primary,
-                            child: Text(
-                              provider.user.name[0],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          const SizedBox(width: AppTheme.spacingMd),
+                          Expanded(
+                            child: TaskSummaryCard(
+                              title: 'In Progress',
+                              count: inProgress,
+                              color: Colors.orange,
+                              icon: Icons.pending,
                             ),
                           ),
                         ],
                       ),
-                    ),
 
-                    // Streak Card
-                    StreakCard(streak: provider.dailyStreak),
+                      const SizedBox(height: AppTheme.spacingLg),
 
-                    const SizedBox(height: AppTheme.spacingLg),
+                      // Calendar Section
+                      CalendarWidget(),
 
-                    // Task Summary Section
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TaskSummaryCard(
-                            title: 'Completed',
-                            count: provider.totalCompleted,
-                            color: Colors.green,
-                            icon: Icons.check_circle,
-                          ),
-                        ),
-                        const SizedBox(width: AppTheme.spacingMd),
-                        Expanded(
-                          child: TaskSummaryCard(
-                            title: 'In Progress',
-                            count: provider.tasks.length,
-                            color: Colors.orange,
-                            icon: Icons.pending,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: AppTheme.spacingLg),
-
-                    // Calendar Section
-                    CalendarWidget(),
-
-                    const SizedBox(height: AppTheme.spacingLg),
-                  ],
+                      const SizedBox(height: AppTheme.spacingLg),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
       bottomNavigationBar: const CustomBottomNav(current: Routes.progress),
     );
@@ -188,38 +204,60 @@ class TaskSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RoundedCard(
-      backgroundColor: color.withAlpha(26), // very light color
-      border: Border.all(color: color.withAlpha(51), width: 1),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(width: AppTheme.spacingSm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: color,
-                  ),
-                ),
-                Text(
-                  count.toString(),
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
+    final isCompleted = title == 'Completed';
+    final accentColor = isCompleted
+        ? const Color(0xFF2E7D32) // richer green
+        : const Color(0xFFEF6C00); // stronger orange
+    final cardBackground = isCompleted
+        ? const Color(0xFFE4F3E8)
+        : const Color(0xFFFFEFE2);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardBackground,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(color: accentColor.withAlpha(90), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withAlpha(35),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
-          Icon(Icons.arrow_forward_ios, color: color, size: 16),
         ],
+      ),
+      child: RoundedCard(
+        backgroundColor: Colors.transparent,
+        border: Border.all(color: Colors.transparent, width: 0),
+        child: Row(
+          children: [
+            Icon(icon, color: accentColor, size: 24),
+            const SizedBox(width: AppTheme.spacingSm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: accentColor,
+                    ),
+                  ),
+                  Text(
+                    count.toString(),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, color: accentColor, size: 16),
+          ],
+        ),
       ),
     );
   }
@@ -361,7 +399,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   margin: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     color: backgroundColor,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                     border: isSelected
                         ? Border.all(color: AppTheme.primary, width: 2)
                         : null,

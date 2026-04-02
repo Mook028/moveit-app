@@ -103,4 +103,78 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> updateCredentials({
+    required String currentPassword,
+    String? newEmail,
+    String? newPassword,
+  }) async {
+    final currentUser = _user;
+    if (currentUser == null) {
+      throw FirebaseAuthException(
+        code: 'user-not-found',
+        message: 'No authenticated user found.',
+      );
+    }
+
+    final email = currentUser.email;
+    if (email == null || email.trim().isEmpty) {
+      throw FirebaseAuthException(
+        code: 'invalid-email',
+        message: 'Current account email is invalid.',
+      );
+    }
+
+    final trimmedCurrentPassword = currentPassword.trim();
+    final trimmedNewEmail = newEmail?.trim();
+    final trimmedNewPassword = newPassword?.trim();
+    final shouldUpdateEmail =
+        trimmedNewEmail != null &&
+        trimmedNewEmail.isNotEmpty &&
+        trimmedNewEmail != email;
+    final shouldUpdatePassword =
+        trimmedNewPassword != null && trimmedNewPassword.isNotEmpty;
+
+    if (!shouldUpdateEmail && !shouldUpdatePassword) {
+      return;
+    }
+
+    if (trimmedCurrentPassword.isEmpty) {
+      throw FirebaseAuthException(
+        code: 'wrong-password',
+        message: 'Please enter your current password.',
+      );
+    }
+
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _authService.reauthenticate(
+        email: email,
+        currentPassword: trimmedCurrentPassword,
+      );
+
+      if (shouldUpdateEmail) {
+        await _authService.updateEmail(trimmedNewEmail);
+      }
+
+      if (shouldUpdatePassword) {
+        if (trimmedNewPassword.length < 6) {
+          throw FirebaseAuthException(
+            code: 'weak-password',
+            message: 'Password must be at least 6 characters.',
+          );
+        }
+        await _authService.updatePassword(trimmedNewPassword);
+      }
+
+      _user = FirebaseAuth.instance.currentUser;
+      notifyListeners();
+    } on FirebaseAuthException {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

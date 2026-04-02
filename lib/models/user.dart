@@ -4,6 +4,7 @@ class UserProfile {
   final int totalTasks;
   final bool reminderEnabled;
   final DateTime? lastCompletedDate;
+  final String? photoUrl;
 
   UserProfile({
     required this.name,
@@ -11,6 +12,7 @@ class UserProfile {
     this.totalTasks = 0,
     this.reminderEnabled = true,
     this.lastCompletedDate,
+    this.photoUrl,
   });
 
   UserProfile copyWith({
@@ -19,6 +21,7 @@ class UserProfile {
     int? totalTasks,
     bool? reminderEnabled,
     DateTime? lastCompletedDate,
+    String? photoUrl,
   }) {
     return UserProfile(
       name: name ?? this.name,
@@ -26,6 +29,7 @@ class UserProfile {
       totalTasks: totalTasks ?? this.totalTasks,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
+      photoUrl: photoUrl ?? this.photoUrl,
     );
   }
 }

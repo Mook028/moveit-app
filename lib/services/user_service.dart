@@ -1,8 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/user.dart';
 
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   // Get user profile from Firestore
   Future<UserProfile?> getUserProfile(String uid) async {
@@ -15,6 +19,7 @@ class UserService {
           dailyStreak: data['dailyStreak'] ?? 0,
           totalTasks: data['totalTasks'] ?? 0,
           reminderEnabled: data['reminderEnabled'] ?? true,
+          photoUrl: data['photoUrl'] as String?,
           lastCompletedDate: data['lastCompletedDate'] != null
               ? DateTime.fromMillisecondsSinceEpoch(data['lastCompletedDate'])
               : null,
@@ -22,7 +27,7 @@ class UserService {
       }
       return null;
     } catch (e) {
-      print('Error getting user profile: $e');
+      debugPrint('Error getting user profile: $e');
       return null;
     }
   }
@@ -35,10 +40,39 @@ class UserService {
         'dailyStreak': profile.dailyStreak,
         'totalTasks': profile.totalTasks,
         'reminderEnabled': profile.reminderEnabled,
+        'photoUrl': profile.photoUrl,
         'lastCompletedDate': profile.lastCompletedDate?.millisecondsSinceEpoch,
       });
     } catch (e) {
-      print('Error updating user profile: $e');
+      debugPrint('Error updating user profile: $e');
+    }
+  }
+
+  Future<void> updateUserFields(String uid, Map<String, dynamic> fields) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .set(fields, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('Error updating user fields: $e');
+      rethrow;
+    }
+  }
+
+  Future<String> uploadProfileImage(String uid, XFile image) async {
+    try {
+      final data = await image.readAsBytes();
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final ref = _storage.ref().child('users/$uid/profile/$fileName');
+
+      final metadata = SettableMetadata(contentType: 'image/jpeg');
+      await ref.putData(data, metadata);
+
+      return await ref.getDownloadURL();
+    } catch (e) {
+      debugPrint('Error uploading profile image: $e');
+      rethrow;
     }
   }
 
@@ -50,10 +84,11 @@ class UserService {
         'dailyStreak': 0,
         'totalTasks': 0,
         'reminderEnabled': true,
+        'photoUrl': null,
         'lastCompletedDate': null,
       });
     } catch (e) {
-      print('Error creating user profile: $e');
+      debugPrint('Error creating user profile: $e');
     }
   }
 
@@ -72,7 +107,7 @@ class UserService {
           .map((doc) => DateTime.fromMillisecondsSinceEpoch(doc['date']))
           .toList();
     } catch (e) {
-      print('Error getting completion history: $e');
+      debugPrint('Error getting completion history: $e');
       return [];
     }
   }
@@ -92,7 +127,7 @@ class UserService {
           .doc(dateKey.toString())
           .set({'date': dateKey, 'completed': true});
     } catch (e) {
-      print('Error recording completion: $e');
+      debugPrint('Error recording completion: $e');
     }
   }
 }
