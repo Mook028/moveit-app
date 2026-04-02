@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/providers/app_provider.dart';
@@ -20,6 +23,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  XFile? _selectedImage;
 
   bool _obscurePassword = true;
 
@@ -49,10 +53,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
-  void _onPickAvatar() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Mock image picker action')));
+  Future<void> _onPickAvatar() async {
+    try {
+      final picker = ImagePicker();
+
+      final XFile? pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (pickedFile == null) return;
+
+      setState(() {
+        _selectedImage = pickedFile;
+      });
+    } catch (e) {
+      debugPrint('Image pick error: $e');
+    }
   }
 
   void _onSave() {
@@ -216,9 +233,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ],
             ),
-            child: const CircleAvatar(
+            child: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Icon(Icons.person_rounded, size: 56, color: _primaryGreen),
+              backgroundImage: _selectedImage != null
+                  ? FileImage(File(_selectedImage!.path))
+                  : null,
+              child: _selectedImage == null
+                  ? const Icon(
+                      Icons.person_rounded,
+                      size: 56,
+                      color: _primaryGreen,
+                    )
+                  : null,
             ),
           ),
           Positioned(
