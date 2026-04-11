@@ -10,6 +10,7 @@ import '../auth/auth_provider.dart';
 import 'edit_profile_screen.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:moveit/features/profile/privacy_policy_page.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -121,11 +122,13 @@ class ProfileScreen extends StatelessWidget {
                       // Edit Profile button
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white, //  เปลี่ยนเป็นพื้นขาว
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1), //  เงาเบา ๆ
+                              color: Colors.black.withValues(
+                                alpha: 0.1,
+                              ), //  เงาเบา ๆ
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -150,7 +153,7 @@ class ProfileScreen extends StatelessWidget {
                               child: Text(
                                 'Edit Profile',
                                 style: TextStyle(
-                                  color: Colors.black87, // 👈 ตัวหนังสือดำ
+                                  color: Colors.black87,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
@@ -204,37 +207,38 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: AppTheme.spacingSm),
 
                       RoundedCard(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PrivacyPolicyPage(),
+                            ),
+                          );
+                        },
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF3E5F5),
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusLg,
-                                ),
+                                color: Colors.purple.withOpacity(0.1),
+                                shape: BoxShape.circle,
                               ),
-                              child: const Icon(
-                                Icons.lock_outline,
-                                color: Color(0xFF7B1FA2),
-                                size: 24,
-                              ),
+                              child: Icon(Icons.lock, color: Colors.purple),
                             ),
-                            const SizedBox(width: AppTheme.spacingSm),
-                            const Expanded(
+                            SizedBox(width: 15),
+                            Expanded(
                               child: Text(
-                                'Privacy Policy',
+                                "Privacy Policy",
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF424242),
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                             Icon(
-                              Icons.chevron_right,
-                              color: Colors.grey[400],
-                              size: 20,
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: Colors.grey,
                             ),
                           ],
                         ),
