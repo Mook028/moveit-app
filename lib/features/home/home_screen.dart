@@ -30,32 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Color _getMoodColor(String? mood) {
-    switch (mood) {
-      case 'Energetic':
-        return const Color(0xFFC8E6C9);
-      case 'Normal':
-        return const Color(0xFFFFF9C4);
-      case 'Tired':
-        return const Color(0xFFB0BEC5);
-      default:
-        return const Color(0xFFF1F8E9);
-    }
-  }
-
-  Color _getMoodTextColor(String? mood) {
-    switch (mood) {
-      case 'Energetic':
-        return const Color(0xFF1B5E20);
-      case 'Normal':
-        return const Color(0xFF827717);
-      case 'Tired':
-        return const Color(0xFF455A64);
-      default:
-        return const Color(0xFF558B2F);
-    }
-  }
-
   String _getMoodLabel(String? mood) {
     switch (mood) {
       case 'Energetic':

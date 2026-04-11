@@ -8,12 +8,16 @@ import '../../widgets/custom_bottom_nav.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
 import 'edit_profile_screen.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final imagePath = context.watch<AppProvider>().profileImagePath;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
@@ -56,31 +60,24 @@ class ProfileScreen extends StatelessWidget {
                               ],
                               color: Colors.grey[300],
                             ),
+
                             child: ClipOval(
-                              child:
-                                  provider.user.photoUrl != null &&
-                                      provider.user.photoUrl!.isNotEmpty
-                                  ? Image.network(
-                                      provider.user.photoUrl!,
-                                      fit: BoxFit.cover,
-                                      width: 128,
-                                      height: 128,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return Center(
-                                              child: Text(
-                                                provider.user.name.isNotEmpty
-                                                    ? provider.user.name[0]
-                                                    : 'U',
-                                                style: const TextStyle(
-                                                  fontSize: 48,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Color(0xFF1B5E20),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                    )
+                              child: imagePath != null
+                                  ? kIsWeb
+                                        //  Web Image.network
+                                        ? Image.network(
+                                            imagePath,
+                                            fit: BoxFit.cover,
+                                            width: 128,
+                                            height: 128,
+                                          )
+                                        //  Mobile Image.file
+                                        : Image.file(
+                                            File(imagePath),
+                                            fit: BoxFit.cover,
+                                            width: 128,
+                                            height: 128,
+                                          )
                                   : Center(
                                       child: Text(
                                         provider.user.name.isNotEmpty
@@ -124,13 +121,11 @@ class ProfileScreen extends StatelessWidget {
                       // Edit Profile button
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white, // 👈 เปลี่ยนเป็นพื้นขาว
+                          color: Colors.white, //  เปลี่ยนเป็นพื้นขาว
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(
-                                0.1,
-                              ), // 👈 เงาเบา ๆ
+                              color: Colors.black.withValues(alpha: 0.1), //  เงาเบา ๆ
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),

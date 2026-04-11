@@ -71,7 +71,7 @@ class AuthService {
       );
     }
 
-    await currentUser.updateEmail(newEmail.trim());
+    await currentUser.verifyBeforeUpdateEmail(newEmail.trim());
   }
 
   Future<void> updatePassword(String newPassword) async {

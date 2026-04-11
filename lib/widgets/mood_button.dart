@@ -77,19 +77,19 @@ class MoodButton extends StatelessWidget {
               ),
               border: Border.all(
                 color: isSelected
-                    ? palette.glow.withOpacity(0.95)
-                    : Colors.white.withOpacity(0.55),
+                    ? palette.glow.withValues(alpha: 0.95)
+                    : Colors.white.withValues(alpha: 0.55),
                 width: isSelected ? 3.0 : 1.4,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isSelected ? 0.22 : 0.14),
+                  color: Colors.black.withValues(alpha: isSelected ? 0.22 : 0.14),
                   blurRadius: isSelected ? 18 : 10,
                   offset: Offset(0, isSelected ? 10 : 6),
                 ),
                 if (isSelected)
                   BoxShadow(
-                    color: palette.glow.withOpacity(0.58),
+                    color: palette.glow.withValues(alpha: 0.58),
                     blurRadius: 26,
                     spreadRadius: 4,
                   ),
@@ -105,12 +105,12 @@ class MoodButton extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.28),
-                      Colors.white.withOpacity(0.10),
+                      Colors.white.withValues(alpha: 0.28),
+                      Colors.white.withValues(alpha: 0.10),
                     ],
                   ),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.35),
+                    color: Colors.white.withValues(alpha: 0.35),
                     width: 1,
                   ),
                 ),

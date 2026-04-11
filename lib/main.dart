@@ -24,7 +24,14 @@ class MoveItApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => AppProvider()),
+
+        ChangeNotifierProvider(
+          create: (_) {
+            final provider = AppProvider();
+            provider.loadProfileImage();
+            return provider;
+          },
+        ),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

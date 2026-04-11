@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/task.dart';
 import '../../models/user.dart';
 import '../../services/user_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 enum TaskDayStatus { allComplete, someComplete, inProgress, none }
 
@@ -14,6 +13,24 @@ class AppProvider extends ChangeNotifier {
 
   late UserProfile user;
   String? selectedMood;
+  String? profileImagePath;
+
+  Future<void> setProfileImage(String path) async {
+    profileImagePath = path;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('profile_image', path);
+
+    notifyListeners();
+  }
+
+  Future<void> loadProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    profileImagePath = prefs.getString('profile_image');
+
+    notifyListeners();
+  }
+
   bool _isMoodConfirmed = false;
   bool get isMoodConfirmed => _isMoodConfirmed;
   List<Task> tasks = [];

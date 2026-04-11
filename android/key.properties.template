@@ -1,0 +1,33 @@
+# MoveIT Android App Signing Key Configuration
+# 
+# THIS IS A TEMPLATE FILE - Do NOT commit the actual key.properties with real credentials to version control
+# 
+# To set up release signing, follow these steps:
+#
+# 1. Generate a keystore file (if you don't have one):
+#    keytool -genkey -v -keystore ~/moveit-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias moveit_key
+#
+# 2. Copy this file to key.properties and fill in the values:
+#    cp key.properties.template key.properties
+#
+# 3. Update the values below with your actual keystore credentials:
+
+# Path to your keystore file (use forward slashes or escape backslashes)
+# Example: C:/Users/YourName/moveit-key.jks or C:\\Users\\YourName\\moveit-key.jks
+storeFile=
+
+# Password for the keystore file
+storePassword=
+
+# Alias (key name) you specified when creating the keystore
+keyAlias=
+
+# Password for the specific key alias
+keyPassword=
+
+# For gradle build command, you can also set environment variables:
+# export KEY_ALIAS=moveit_key
+# export KEY_PASSWORD=your_key_password
+# export KEYSTORE_PATH=/path/to/moveit-key.jks
+# export KEYSTORE_PASSWORD=your_keystore_password
+# Then run: flutter build appbundle --release

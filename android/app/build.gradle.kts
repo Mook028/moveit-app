@@ -1,3 +1,6 @@
+import java.util.Properties
+import org.gradle.api.GradleException
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -7,8 +10,39 @@ plugins {
 
 }
 
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
+}
+
+val releaseTasksRequested = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true)
+}
+
+val hasEnvSigningConfig = listOf(
+    "KEY_ALIAS",
+    "KEY_PASSWORD",
+    "KEYSTORE_PATH",
+    "KEYSTORE_PASSWORD",
+).all { !System.getenv(it).isNullOrBlank() }
+
+val hasFileSigningConfig = keystorePropertiesFile.exists() &&
+    !keystoreProperties["keyAlias"].toString().isBlank() &&
+    !keystoreProperties["keyPassword"].toString().isBlank() &&
+    !keystoreProperties["storeFile"].toString().isBlank() &&
+    !keystoreProperties["storePassword"].toString().isBlank()
+
+val hasReleaseSigningConfig = hasEnvSigningConfig || hasFileSigningConfig
+
+if (releaseTasksRequested && !hasReleaseSigningConfig) {
+    throw GradleException(
+        "Missing release signing configuration. Copy android/key.properties.template to android/key.properties and fill it in, or set KEY_ALIAS, KEY_PASSWORD, KEYSTORE_PATH, and KEYSTORE_PASSWORD.",
+    )
+}
+
 android {
-    namespace = "com.example.moveit"
+    namespace = "com.moveit.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -22,8 +56,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.moveit"
+        // Application ID for MoveIT app on Play Store
+        applicationId = "com.moveit.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -32,11 +66,25 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (hasEnvSigningConfig) {
+                keyAlias = System.getenv("KEY_ALIAS") ?: ""
+                keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+                storeFile = System.getenv("KEYSTORE_PATH")?.let { file(it) }
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+            } else if (hasFileSigningConfig) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

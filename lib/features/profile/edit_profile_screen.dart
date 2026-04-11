@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/providers/app_provider.dart';
+import 'package:flutter/foundation.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -17,13 +18,11 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   static const Color _primaryGreen = Color(0xFF2E7D32);
   static const Color _lightGreen = Color(0xFFA5D6A7);
-  static const Color _backgroundGreen = Color(0xFFF1F8F4);
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  XFile? _selectedImage;
 
   bool _obscurePassword = true;
 
@@ -64,9 +63,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (pickedFile == null) return;
 
-      setState(() {
-        _selectedImage = pickedFile;
-      });
+      if (!mounted) return;
+      context.read<AppProvider>().setProfileImage(pickedFile.path);
     } catch (e) {
       debugPrint('Image pick error: $e');
     }
@@ -123,7 +121,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     children: [
                       _buildTopBar(),
                       const SizedBox(height: 22),
-                      _buildAvatarSection(),
+                      _buildAvatarSection(context),
                       const SizedBox(height: 24),
                       _LabeledInputField(
                         label: 'Name',
@@ -159,7 +157,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             _obscurePassword
                                 ? Icons.visibility_off_rounded
                                 : Icons.visibility_rounded,
-                            color: _primaryGreen.withOpacity(0.75),
+                            color: _primaryGreen.withValues(alpha: 0.75),
                           ),
                         ),
                       ),
@@ -205,7 +203,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildAvatarSection() {
+  Widget _buildAvatarSection(BuildContext context) {
+    final imagePath = context.watch<AppProvider>().profileImagePath;
+
     return Center(
       child: Stack(
         clipBehavior: Clip.none,
@@ -216,34 +216,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: _primaryGreen.withOpacity(0.75),
+                color: _primaryGreen.withValues(alpha: 0.75),
                 width: 3,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: _primaryGreen.withOpacity(0.26),
+                  color: _primaryGreen.withValues(alpha: 0.26),
                   blurRadius: 30,
                   spreadRadius: 2,
                   offset: const Offset(0, 12),
                 ),
                 BoxShadow(
-                  color: const Color(0xFFA5D6A7).withOpacity(0.35),
+                  color: const Color(0xFFA5D6A7).withValues(alpha: 0.35),
                   blurRadius: 22,
                   spreadRadius: 1,
                 ),
               ],
             ),
             child: CircleAvatar(
+              radius: 50,
               backgroundColor: Colors.white,
-              backgroundImage: _selectedImage != null
-                  ? FileImage(File(_selectedImage!.path))
+              backgroundImage: imagePath != null
+                  ? (kIsWeb
+                        ? NetworkImage(imagePath)
+                        : FileImage(File(imagePath)) as ImageProvider)
                   : null,
-              child: _selectedImage == null
-                  ? const Icon(
-                      Icons.person_rounded,
-                      size: 56,
-                      color: _primaryGreen,
-                    )
+              child: imagePath == null
+                  ? const Icon(Icons.person_rounded)
                   : null,
             ),
           ),
@@ -263,7 +262,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     color: _primaryGreen,
                     boxShadow: [
                       BoxShadow(
-                        color: _primaryGreen.withOpacity(0.35),
+                        color: _primaryGreen.withValues(alpha: 0.35),
                         blurRadius: 14,
                         offset: const Offset(0, 6),
                       ),
@@ -293,7 +292,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(alpha),
+        color: color.withValues(alpha: alpha),
       ),
     );
   }
@@ -338,7 +337,7 @@ class _LabeledInputField extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: _primaryGreen.withOpacity(0.08),
+                color: _primaryGreen.withValues(alpha: 0.08),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -356,7 +355,7 @@ class _LabeledInputField extends StatelessWidget {
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(
-                color: _primaryGreen.withOpacity(0.45),
+                color: _primaryGreen.withValues(alpha: 0.45),
                 fontWeight: FontWeight.w500,
               ),
               suffixIcon: suffixIcon,
@@ -375,7 +374,7 @@ class _LabeledInputField extends StatelessWidget {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20),
                 borderSide: BorderSide(
-                  color: _primaryGreen.withOpacity(0.20),
+                  color: _primaryGreen.withValues(alpha: 0.20),
                   width: 1.0,
                 ),
               ),
@@ -410,7 +409,7 @@ class _RoundIconButton extends StatelessWidget {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: _primaryGreen.withOpacity(0.14),
+                color: _primaryGreen.withValues(alpha: 0.14),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),

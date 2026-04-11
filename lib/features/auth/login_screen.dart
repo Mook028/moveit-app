@@ -23,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+
   String? _error;
   bool _obscurePassword = true;
   bool _rememberMe = false;
@@ -258,9 +259,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(28),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(
-                                    0xFF4A9D87,
-                                  ).withOpacity(0.15),
+                                      color: const Color(0xFF4A9D87)
+                                          .withValues(alpha: 0.15),
                                   blurRadius: 25,
                                   offset: const Offset(0, 10),
                                 ),
@@ -335,6 +335,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                         ),
                                         const Spacer(),
+
                                         TextButton(
                                           onPressed: loading
                                               ? null
@@ -342,53 +343,68 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   final email = _emailController
                                                       .text
                                                       .trim();
+
                                                   if (email.isEmpty) {
                                                     ScaffoldMessenger.of(
                                                       context,
                                                     ).showSnackBar(
                                                       const SnackBar(
                                                         content: Text(
-                                                          'Please enter your email to reset',
+                                                          "Please enter your email",
                                                         ),
                                                       ),
                                                     );
                                                     return;
                                                   }
+
                                                   try {
                                                     await context
                                                         .read<AuthProvider>()
                                                         .resetPassword(email);
-                                                    if (mounted) {
-                                                      ScaffoldMessenger.of(
-                                                        context,
-                                                      ).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text(
-                                                            'Password reset link sent',
-                                                          ),
+                                                    if (!context.mounted) return;
+
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                          "Check your email for reset link",
                                                         ),
-                                                      );
+                                                      ),
+                                                    );
+                                                  } on FirebaseAuthException catch (
+                                                    e
+                                                  ) {
+                                                    String message =
+                                                        "Something went wrong";
+
+                                                    if (e.code ==
+                                                        'user-not-found') {
+                                                      message =
+                                                          "Email นี้ไม่มีในระบบ";
                                                     }
-                                                  } catch (e) {
-                                                    if (mounted) {
-                                                      ScaffoldMessenger.of(
-                                                        context,
-                                                      ).showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(
-                                                            e.toString(),
-                                                          ),
-                                                        ),
-                                                      );
-                                                    }
+
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(message),
+                                                      ),
+                                                    );
                                                   }
                                                 },
-                                          child: Text(
-                                            'Forgot password?',
+                                          style: TextButton.styleFrom(
+                                            padding: EdgeInsets.zero,
+                                            minimumSize: const Size(0, 0),
+                                            tapTargetSize: MaterialTapTargetSize
+                                                .shrinkWrap,
+                                          ),
+                                          child: const Text(
+                                            'Forgot Password?',
                                             style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w600,
-                                              color: const Color(0xFF4A9D87),
+                                              color: Color(0xFF2D8A75),
                                             ),
                                           ),
                                         ),
@@ -409,7 +425,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: Colors.red.withOpacity(0.1),
+                                        color: Colors.red.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
@@ -639,7 +655,7 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2D8A75).withOpacity(0.3),
+            color: const Color(0xFF2D8A75).withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -693,8 +709,8 @@ class SkyLandscapePainter extends CustomPainter {
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [
-        const Color(0xFF87CEEB).withOpacity(0.3),
-        const Color(0xFFC8E6E5).withOpacity(0.2),
+        const Color(0xFF87CEEB).withValues(alpha: 0.3),
+        const Color(0xFFC8E6E5).withValues(alpha: 0.2),
       ],
     );
 
@@ -715,12 +731,12 @@ class SkyLandscapePainter extends CustomPainter {
     canvas.drawCircle(
       Offset(size.width * 0.85, size.height * 0.15),
       18,
-      Paint()..color = const Color(0xFFFDB813).withOpacity(0.3),
+      Paint()..color = const Color(0xFFFDB813).withValues(alpha: 0.3),
     );
 
     // Green grass field
     final grassPaint = Paint()
-      ..color = const Color(0xFF4A9D87).withOpacity(0.4)
+      ..color = const Color(0xFF4A9D87).withValues(alpha: 0.4)
       ..style = PaintingStyle.fill;
     canvas.drawRect(
       Rect.fromLTWH(0, size.height * 0.65, size.width, size.height * 0.35),
@@ -730,7 +746,7 @@ class SkyLandscapePainter extends CustomPainter {
     // Darker grass line
     canvas.drawRect(
       Rect.fromLTWH(0, size.height * 0.64, size.width, 2),
-      Paint()..color = const Color(0xFF2D8A75).withOpacity(0.3),
+      Paint()..color = const Color(0xFF2D8A75).withValues(alpha: 0.3),
     );
 
     // City silhouette
@@ -750,7 +766,7 @@ class SkyLandscapePainter extends CustomPainter {
     double height,
   ) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
+      ..color = Colors.white.withValues(alpha: 0.5)
       ..style = PaintingStyle.fill;
 
     canvas.drawRRect(
@@ -765,7 +781,7 @@ class SkyLandscapePainter extends CustomPainter {
   /// Draw city silhouette buildings in the background
   void _drawCitySilhouette(Canvas canvas, Size size) {
     final silhouettePaint = Paint()
-      ..color = const Color(0xFF1B5E54).withOpacity(0.15);
+      ..color = const Color(0xFF1B5E54).withValues(alpha: 0.15);
 
     // Building shapes
     canvas.drawRect(
@@ -799,7 +815,7 @@ class SkyLandscapePainter extends CustomPainter {
     double height,
   ) {
     final treePaint = Paint()
-      ..color = const Color(0xFF2D8A75).withOpacity(0.25);
+      ..color = const Color(0xFF2D8A75).withValues(alpha: 0.25);
 
     // Trunk
     canvas.drawRect(
