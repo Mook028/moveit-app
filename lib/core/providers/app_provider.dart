@@ -18,8 +18,12 @@ class AppProvider extends ChangeNotifier {
 
   Map<String, DayStatus> taskStatusMap = {};
 
+  String _formatDateKey(DateTime date) {
+    return "${date.year}-${date.month}-${date.day}";
+  }
+
   void setDayStatus(DateTime date, DayStatus status) {
-    final key = date.toIso8601String().split('T').first;
+    final key = _formatDateKey(date);
     print("SET STATUS: $status");
     taskStatusMap[key] = status;
     saveStatus();
@@ -27,7 +31,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   DayStatus getDayStatus(DateTime date) {
-    final key = date.toIso8601String().split('T').first;
+    final key = _formatDateKey(date);
     return taskStatusMap[key] ?? DayStatus.none;
   }
 
@@ -371,12 +375,14 @@ class AppProvider extends ChangeNotifier {
 
       final completed = tasks.where((t) => t.completed).length;
 
-      if (completed == tasks.length) {
+      if (tasks.isEmpty) {
+        setDayStatus(DateTime.now(), DayStatus.none);
+      } else if (completed == tasks.length) {
         setDayStatus(DateTime.now(), DayStatus.allComplete);
       } else if (completed > 0) {
         setDayStatus(DateTime.now(), DayStatus.someComplete);
       } else {
-        setDayStatus(DateTime.now(), DayStatus.none);
+        setDayStatus(DateTime.now(), DayStatus.inProgress);
       }
 
       notifyListeners();

@@ -284,12 +284,14 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       final tasks = provider.tasks;
       final completed = tasks.where((t) => t.completed).length;
 
-      if (completed == tasks.length && tasks.isNotEmpty) {
+      if (tasks.isEmpty) {
+        provider.setDayStatus(DateTime.now(), DayStatus.none);
+      } else if (completed == tasks.length) {
         provider.setDayStatus(DateTime.now(), DayStatus.allComplete);
       } else if (completed > 0) {
         provider.setDayStatus(DateTime.now(), DayStatus.someComplete);
       } else {
-        provider.setDayStatus(DateTime.now(), DayStatus.none);
+        provider.setDayStatus(DateTime.now(), DayStatus.inProgress);
       }
     });
   }

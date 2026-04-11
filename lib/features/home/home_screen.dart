@@ -181,7 +181,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     .where((t) => t.completed)
                                     .length;
 
-                                if (completed == updatedTasks.length) {
+                                if (updatedTasks.isEmpty) {
+                                  context.read<AppProvider>().setDayStatus(
+                                    DateTime.now(),
+                                    DayStatus.none,
+                                  );
+                                } else if (completed == updatedTasks.length) {
                                   context.read<AppProvider>().setDayStatus(
                                     DateTime.now(),
                                     DayStatus.allComplete,
@@ -194,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 } else {
                                   context.read<AppProvider>().setDayStatus(
                                     DateTime.now(),
-                                    DayStatus.none,
+                                    DayStatus.inProgress,
                                   );
                                 }
                               },
