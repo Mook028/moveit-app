@@ -5,8 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/task.dart';
 import '../../models/user.dart';
 import '../../services/user_service.dart';
+import 'dart:convert';
 
-enum TaskDayStatus { allComplete, someComplete, inProgress, none }
+enum DayStatus { none, someComplete, allComplete, inProgress }
 
 class AppProvider extends ChangeNotifier {
   static const String _lastActiveDateKey = 'lastActiveDate';
@@ -14,6 +15,44 @@ class AppProvider extends ChangeNotifier {
   late UserProfile user;
   String? selectedMood;
   String? profileImagePath;
+
+  Map<String, DayStatus> taskStatusMap = {};
+
+  void setDayStatus(DateTime date, DayStatus status) {
+    final key = date.toIso8601String().split('T').first;
+    print("SET STATUS: $status");
+    taskStatusMap[key] = status;
+    saveStatus();
+    notifyListeners();
+  }
+
+  DayStatus getDayStatus(DateTime date) {
+    final key = date.toIso8601String().split('T').first;
+    return taskStatusMap[key] ?? DayStatus.none;
+  }
+
+  Future<void> saveStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final map = taskStatusMap.map((key, value) => MapEntry(key, value.index));
+
+    prefs.setString('task_status', jsonEncode(map));
+  }
+
+  Future<void> loadStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('task_status');
+
+    if (data != null) {
+      final decoded = jsonDecode(data) as Map<String, dynamic>;
+
+      taskStatusMap = decoded.map(
+        (key, value) => MapEntry(key, DayStatus.values[value]),
+      );
+
+      notifyListeners();
+    }
+  }
 
   Future<void> setProfileImage(String path) async {
     profileImagePath = path;
@@ -44,6 +83,10 @@ class AppProvider extends ChangeNotifier {
   bool _hasCheckedDayBoundary = false;
   bool _shouldRedirectToMoodForNewDay = false;
   final Set<int> _completionHistoryDateKeys = {};
+  // Tracks per-day task completion state using yyyy-mm-dd keys.
+  final Map<String, DayStatus> _dailyStatus = {};
+
+  Map<String, DayStatus> get dailyStatus => Map.unmodifiable(_dailyStatus);
 
   DateTime? get lastActiveDate => _lastActiveDate;
   bool get hasCheckedDayBoundary => _hasCheckedDayBoundary;
@@ -66,6 +109,40 @@ class AppProvider extends ChangeNotifier {
 
   int _toDateKey(DateTime date) {
     return DateTime(date.year, date.month, date.day).millisecondsSinceEpoch;
+  }
+
+  String formatDateKey(DateTime date) {
+    final normalized = DateTime(date.year, date.month, date.day);
+    final year = normalized.year.toString().padLeft(4, '0');
+    final month = normalized.month.toString().padLeft(2, '0');
+    final day = normalized.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
+  }
+
+  void updateDayStatus(DateTime date, List<Task> tasks, {bool notify = true}) {
+    final key = formatDateKey(date);
+
+    if (tasks.isEmpty) {
+      // No generated tasks for this date: keep calendar in default (grey) state.
+      _dailyStatus.remove(key);
+      if (notify) {
+        notifyListeners();
+      }
+      return;
+    }
+
+    final completedCount = tasks.where((task) => task.completed).length;
+    if (completedCount == 0) {
+      _dailyStatus[key] = DayStatus.none;
+    } else if (completedCount == tasks.length) {
+      _dailyStatus[key] = DayStatus.allComplete;
+    } else {
+      _dailyStatus[key] = DayStatus.someComplete;
+    }
+
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   AppProvider() {
@@ -178,6 +255,10 @@ class AppProvider extends ChangeNotifier {
       ..clear()
       ..addAll(completionHistory.map(_toDateKey));
 
+    for (final completionDate in completionHistory) {
+      _dailyStatus[formatDateKey(completionDate)] = DayStatus.allComplete;
+    }
+
     if (notify) {
       notifyListeners();
     }
@@ -197,31 +278,22 @@ class AppProvider extends ChangeNotifier {
     return <Task>[];
   }
 
-  TaskDayStatus getStatusForDate(DateTime? date) {
-    if (date == null) return TaskDayStatus.none;
+  DayStatus? getStatusForDate(DateTime? date) {
+    if (date == null) return null;
 
-    final targetDate = DateTime(date.year, date.month, date.day);
-    final today = DateTime.now();
-    final todayDate = DateTime(today.year, today.month, today.day);
-
-    if (_isSameDate(targetDate, todayDate)) {
-      final dayTasks = getTasksForDate(targetDate);
-      if (dayTasks.isEmpty) return TaskDayStatus.none;
-
-      final completedCount = dayTasks.where((task) => task.completed).length;
-      if (completedCount >= dayTasks.length) return TaskDayStatus.allComplete;
-      if (completedCount > 0) return TaskDayStatus.someComplete;
-      return TaskDayStatus.inProgress;
+    final status = _dailyStatus[formatDateKey(date)];
+    if (status != null) {
+      return status;
     }
 
-    if (_completionHistoryDateKeys.contains(_toDateKey(targetDate))) {
-      return TaskDayStatus.allComplete;
+    if (_completionHistoryDateKeys.contains(_toDateKey(date))) {
+      return DayStatus.allComplete;
     }
 
-    return TaskDayStatus.none;
+    return null;
   }
 
-  TaskDayStatus getTaskStatusForDate(DateTime date) {
+  DayStatus? getTaskStatusForDate(DateTime date) {
     return getStatusForDate(date);
   }
 
@@ -278,6 +350,7 @@ class AppProvider extends ChangeNotifier {
         ),
       ];
     }
+    updateDayStatus(DateTime.now(), tasks, notify: false);
     notifyListeners();
   }
 
@@ -294,6 +367,16 @@ class AppProvider extends ChangeNotifier {
       } else {
         // Task was just completed
         totalCompleted += 1;
+      }
+
+      final completed = tasks.where((t) => t.completed).length;
+
+      if (completed == tasks.length) {
+        setDayStatus(DateTime.now(), DayStatus.allComplete);
+      } else if (completed > 0) {
+        setDayStatus(DateTime.now(), DayStatus.someComplete);
+      } else {
+        setDayStatus(DateTime.now(), DayStatus.none);
       }
 
       notifyListeners();
@@ -318,6 +401,8 @@ class AppProvider extends ChangeNotifier {
     if (completedCount > 0 && !wasAllCompleted) {
       await updateStreak();
     }
+
+    updateDayStatus(DateTime.now(), tasks, notify: false);
 
     notifyListeners();
   }

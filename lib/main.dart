@@ -29,6 +29,7 @@ class MoveItApp extends StatelessWidget {
           create: (_) {
             final provider = AppProvider();
             provider.loadProfileImage();
+            provider.loadStatus();
             return provider;
           },
         ),

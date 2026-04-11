@@ -274,6 +274,26 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   DateTime selectedDate = DateTime.now();
   DateTime currentMonth = DateTime.now();
 
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<AppProvider>();
+
+      final tasks = provider.tasks;
+      final completed = tasks.where((t) => t.completed).length;
+
+      if (completed == tasks.length && tasks.isNotEmpty) {
+        provider.setDayStatus(DateTime.now(), DayStatus.allComplete);
+      } else if (completed > 0) {
+        provider.setDayStatus(DateTime.now(), DayStatus.someComplete);
+      } else {
+        provider.setDayStatus(DateTime.now(), DayStatus.none);
+      }
+    });
+  }
+
   // Mock data for completed/in progress dates
   final Set<DateTime> allCompleteDates = {
     DateTime(2024, 3, 1),
@@ -388,14 +408,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   date.year == selectedDate.year;
 
               Color? backgroundColor;
-              if (allCompleteDates.contains(date)) {
-                backgroundColor = const Color(0xFF166534); // dark green
-              } else if (someCompleteDates.contains(date)) {
-                backgroundColor = const Color(0xFF86EFAC); // light green
-              } else if (inProgressDates.contains(date)) {
-                backgroundColor = const Color(
-                  0xFFFFD54F,
-                ); // light orange/yellow
+              final provider = context.watch<AppProvider>();
+              final status = provider.getDayStatus(date);
+
+              if (status == DayStatus.allComplete) {
+                backgroundColor = const Color(0xFF166534); // เขียวเข้ม
+              } else if (status == DayStatus.someComplete) {
+                backgroundColor = const Color(0xFF86EFAC); // เขียวอ่อน
+              } else if (status == DayStatus.inProgress) {
+                backgroundColor = const Color(0xFFFFD54F); // เหลือง
               }
 
               return GestureDetector(

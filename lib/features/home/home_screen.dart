@@ -170,7 +170,34 @@ class _HomeScreenState extends State<HomeScreen> {
                               bottom: AppTheme.spacingSm,
                             ),
                             child: RoundedCard(
-                              onTap: () => provider.toggleTask(t.id),
+                              onTap: () {
+                                provider.toggleTask(t.id);
+
+                                // ดึงค่าใหม่หลัง toggle
+                                final updatedTasks = context
+                                    .read<AppProvider>()
+                                    .tasks;
+                                final completed = updatedTasks
+                                    .where((t) => t.completed)
+                                    .length;
+
+                                if (completed == updatedTasks.length) {
+                                  context.read<AppProvider>().setDayStatus(
+                                    DateTime.now(),
+                                    DayStatus.allComplete,
+                                  );
+                                } else if (completed > 0) {
+                                  context.read<AppProvider>().setDayStatus(
+                                    DateTime.now(),
+                                    DayStatus.someComplete,
+                                  );
+                                } else {
+                                  context.read<AppProvider>().setDayStatus(
+                                    DateTime.now(),
+                                    DayStatus.none,
+                                  );
+                                }
+                              },
                               child: Row(
                                 children: [
                                   Container(
@@ -245,6 +272,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: OutlinedButton(
                               onPressed: () {
                                 provider.markAllAsDone();
+
+                                provider.setDayStatus(
+                                  DateTime.now(),
+                                  DayStatus.allComplete,
+                                );
+
                                 if (mounted) {
                                   context.go(Routes.progress);
                                 }

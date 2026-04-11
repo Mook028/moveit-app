@@ -104,7 +104,21 @@ class UserService {
           .get();
 
       return querySnapshot.docs
-          .map((doc) => DateTime.fromMillisecondsSinceEpoch(doc['date']))
+          .map((doc) {
+            final data = doc.data();
+            final rawDate = data['date'];
+
+            if (rawDate is int) {
+              return DateTime.fromMillisecondsSinceEpoch(rawDate);
+            }
+
+            if (rawDate is num) {
+              return DateTime.fromMillisecondsSinceEpoch(rawDate.toInt());
+            }
+
+            return null;
+          })
+          .whereType<DateTime>()
           .toList();
     } catch (e) {
       debugPrint('Error getting completion history: $e');
