@@ -6,7 +6,7 @@ class MoodButton extends StatelessWidget {
   final String label;
   final bool isSelected;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const MoodButton({
     super.key,
@@ -14,7 +14,7 @@ class MoodButton extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.color,
-    required this.onTap,
+    this.onTap,
   });
 
   String _getMoodEmoji(String mood) {
@@ -83,7 +83,9 @@ class MoodButton extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: isSelected ? 0.22 : 0.14),
+                  color: Colors.black.withValues(
+                    alpha: isSelected ? 0.22 : 0.14,
+                  ),
                   blurRadius: isSelected ? 18 : 10,
                   offset: Offset(0, isSelected ? 10 : 6),
                 ),

@@ -124,6 +124,8 @@ class AppProvider extends ChangeNotifier {
   }
 
   void updateDayStatus(DateTime date, List<Task> tasks, {bool notify = true}) {
+    if (!_isMoodConfirmed) return;
+
     final key = formatDateKey(date);
 
     if (tasks.isEmpty) {
@@ -302,15 +304,26 @@ class AppProvider extends ChangeNotifier {
   }
 
   void setMood(String mood) {
+    if (_isMoodConfirmed) return;
+
     selectedMood = mood;
-    _isMoodConfirmed = false;
+
     hasNavigatedToStatsToday = false;
-    generateTasksByMood(mood);
     notifyListeners();
   }
 
   void confirmMood() {
+    if (selectedMood != null) {
+      generateTasksByMood(selectedMood!);
+    }
     _isMoodConfirmed = true;
+    notifyListeners();
+  }
+
+  void unlockMood() {
+    _isMoodConfirmed = false;
+    selectedMood = null;
+    tasks = [];
     notifyListeners();
   }
 

@@ -71,31 +71,72 @@ class MoodScreen extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            MoodButton(
-                              mood: 'Energetic',
-                              label: 'Energetic',
-                              color: AppTheme.accentEnergetic,
-                              isSelected: provider.selectedMood == 'Energetic',
-                              onTap: () => provider.setMood('Energetic'),
+                            // 🔋 Energetic
+                            Opacity(
+                              opacity: provider.isMoodConfirmed ? 0.5 : 1,
+                              child: AnimatedScale(
+                                scale: provider.selectedMood == 'Energetic'
+                                    ? 1.1
+                                    : 1,
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeOut,
+                                child: MoodButton(
+                                  mood: 'Energetic',
+                                  label: 'Energetic',
+                                  color: AppTheme.accentEnergetic,
+                                  isSelected:
+                                      provider.selectedMood == 'Energetic',
+                                  onTap: provider.isMoodConfirmed
+                                      ? null
+                                      : () => provider.setMood('Energetic'),
+                                ),
+                              ),
                             ),
-                            MoodButton(
-                              mood: 'Normal',
-                              label: 'Normal',
-                              color: AppTheme.accentNormal,
-                              isSelected: provider.selectedMood == 'Normal',
-                              onTap: () => provider.setMood('Normal'),
+
+                            // 🙂 Normal
+                            Opacity(
+                              opacity: provider.isMoodConfirmed ? 0.5 : 1,
+                              child: AnimatedScale(
+                                scale: provider.selectedMood == 'Normal'
+                                    ? 1.1
+                                    : 1,
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeOut,
+                                child: MoodButton(
+                                  mood: 'Normal',
+                                  label: 'Normal',
+                                  color: AppTheme.accentNormal,
+                                  isSelected: provider.selectedMood == 'Normal',
+                                  onTap: provider.isMoodConfirmed
+                                      ? null
+                                      : () => provider.setMood('Normal'),
+                                ),
+                              ),
                             ),
-                            MoodButton(
-                              mood: 'Tired',
-                              label: 'Tired',
-                              color: AppTheme.accentTired,
-                              isSelected: provider.selectedMood == 'Tired',
-                              onTap: () => provider.setMood('Tired'),
+
+                            // 🧘 Tired
+                            Opacity(
+                              opacity: provider.isMoodConfirmed ? 0.5 : 1,
+                              child: AnimatedScale(
+                                scale: provider.selectedMood == 'Tired'
+                                    ? 1.1
+                                    : 1,
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeOut,
+                                child: MoodButton(
+                                  mood: 'Tired',
+                                  label: 'Tired',
+                                  color: AppTheme.accentTired,
+                                  isSelected: provider.selectedMood == 'Tired',
+                                  onTap: provider.isMoodConfirmed
+                                      ? null
+                                      : () => provider.setMood('Tired'),
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-
                       // Streak card
                       RoundedCard(
                         backgroundColor: Colors.white.withAlpha(204),
@@ -152,7 +193,9 @@ class MoodScreen extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: provider.selectedMood != null
+                          onPressed:
+                              (provider.selectedMood != null &&
+                                  !provider.isMoodConfirmed)
                               ? () {
                                   context.read<AppProvider>().confirmMood();
                                   context.go(Routes.home);

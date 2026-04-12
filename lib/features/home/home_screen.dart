@@ -271,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         const SizedBox(height: AppTheme.spacingMd),
 
-                        if (provider.tasks.isNotEmpty)
+                        if (provider.tasks.isNotEmpty) ...[
                           SizedBox(
                             width: double.infinity,
                             child: OutlinedButton(
@@ -311,6 +311,20 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
+
+                          const SizedBox(height: 12),
+
+                          TextButton(
+                            onPressed: () {
+                              context.read<AppProvider>().unlockMood();
+                              context.go(Routes.mood);
+                            },
+                            child: const Text(
+                              "Change Mood",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
                       ] else ...[
                         Padding(
                           padding: const EdgeInsets.symmetric(

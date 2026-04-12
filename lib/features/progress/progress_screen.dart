@@ -433,7 +433,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                     color: backgroundColor,
                     borderRadius: BorderRadius.circular(10),
                     border: isSelected
-                        ? Border.all(color: AppTheme.primary, width: 2)
+                        ? Border.all(
+                            color: backgroundColor ?? AppTheme.primary,
+                            width: 2,
+                          )
                         : null,
                   ),
                   child: Center(
