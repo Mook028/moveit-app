@@ -165,81 +165,221 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: AppTheme.spacingLg),
 
                       // Settings cards
+
+                      // 🧾 My Account
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "My Account",
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
                       RoundedCard(
                         child: Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE3F2FD),
-                                borderRadius: BorderRadius.circular(
-                                  AppTheme.radiusLg,
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.notifications_none,
-                                color: Color(0xFF1976D2),
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: AppTheme.spacingSm),
+                            const Icon(Icons.person_outline),
+
+                            const SizedBox(width: 12),
+
                             const Expanded(
                               child: Text(
-                                'Daily Reminders',
+                                "Account Info",
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF424242),
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
-                            Switch(
-                              value: provider.reminderEnabled,
-                              onChanged: (_) => provider.toggleReminder(),
-                              activeThumbColor: Colors.white,
-                              activeTrackColor: AppTheme.primary,
-                              inactiveTrackColor: Colors.grey[300],
-                            ),
+
+                            const Icon(Icons.chevron_right),
                           ],
                         ),
                       ),
 
-                      const SizedBox(height: AppTheme.spacingSm),
+                      const SizedBox(height: 8),
+
+                      // 🔐 Settings & Security
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Settings & Security",
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // 🔔 Daily Reminder
+                      RoundedCard(
+                        child: SizedBox(
+                          height: 25,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.notifications_none, size: 22),
+
+                              const SizedBox(width: 12),
+
+                              const Expanded(
+                                child: Text(
+                                  'Daily Reminders',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+
+                              Transform.scale(
+                                scale: 0.85,
+                                child: Switch(
+                                  value: provider.reminderEnabled,
+                                  onChanged: (_) => provider.toggleReminder(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
 
                       RoundedCard(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const PrivacyPolicyPage(),
-                            ),
-                          );
-                        },
                         child: Row(
                           children: [
-                            Container(
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.purple.withOpacity(0.1),
-                                shape: BoxShape.circle,
+                            const Icon(Icons.lock_outline),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Text(
+                                "Change Password",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                              child: Icon(Icons.lock, color: Colors.purple),
                             ),
-                            SizedBox(width: 15),
-                            Expanded(
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      RoundedCard(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.language),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Text(
+                                "Language",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            const Text(
+                              "English UK",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // 🆘 Support
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Support",
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      RoundedCard(
+                        child: Row(
+                          children: [
+                            Icon(Icons.help_outline),
+                            const SizedBox(width: 12),
+                            const Expanded(child: Text("Help Centre")),
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      RoundedCard(
+                        child: Row(
+                          children: [
+                            Icon(Icons.gavel),
+                            const SizedBox(width: 12),
+                            const Expanded(child: Text("Community Rules")),
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+                      RoundedCard(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.lock),
+
+                            const SizedBox(width: 12),
+
+                            const Expanded(
                               child: Text(
                                 "Privacy Policy",
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
-                            Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: Colors.grey,
+
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      RoundedCard(
+                        child: Row(
+                          children: [
+                            Icon(Icons.mail_outline),
+                            const SizedBox(width: 12),
+                            const Expanded(child: Text("Contact Us")),
+                            const Icon(Icons.chevron_right),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      RoundedCard(
+                        child: Row(
+                          children: [
+                            Icon(Icons.person_remove_outlined),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Text("Request Account Deletion"),
                             ),
+                            const Icon(Icons.chevron_right),
                           ],
                         ),
                       ),
@@ -288,6 +428,35 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: const CustomBottomNav(current: Routes.profile),
+    );
+  }
+}
+
+class SettingItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback? onTap;
+
+  const SettingItem({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RoundedCard(
+      onTap: onTap,
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(icon, color: Colors.grey),
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        trailing: const Icon(Icons.chevron_right),
+      ),
     );
   }
 }
