@@ -45,6 +45,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final imagePath = context.watch<AppProvider>().profileImagePath;
     final imageBytes = context.watch<AppProvider>().profileImageBytes;
+    final firebaseUser = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -59,73 +60,52 @@ class ProfileScreen extends StatelessWidget {
         child: Consumer<AppProvider>(
           builder: (context, provider, child) {
             return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingMd,
-                  vertical: AppTheme.spacingSm,
-                ),
-                child: SingleChildScrollView(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingMd,
+                    vertical: AppTheme.spacingSm,
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: AppTheme.spacingLg),
 
-                      Stack(
-                        children: [
-                          Container(
-                            width: 128,
-                            height: 128,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(64),
-                                  blurRadius: 16,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                              color: Colors.grey[300],
+                      /// PROFILE IMAGE (แก้แล้ว ใช้ Firebase)
+                      Container(
+                        width: 128,
+                        height: 128,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(60),
+                              blurRadius: 16,
                             ),
-                            child: ClipOval(
-                              child: imageBytes != null
-                                  ? Image.memory(
-                                      imageBytes,
-                                      fit: BoxFit.cover,
-                                      width: 128,
-                                      height: 128,
-                                    )
-                                  : imagePath != null
-                                  ? (kIsWeb
-                                        ? Image.network(
-                                            imagePath,
-                                            fit: BoxFit.cover,
-                                            width: 128,
-                                            height: 128,
-                                          )
-                                        : Image.file(
-                                            File(imagePath),
-                                            fit: BoxFit.cover,
-                                            width: 128,
-                                            height: 128,
-                                          ))
-                                  : Center(
-                                      child: Text(
-                                        provider.user.name.isNotEmpty
-                                            ? provider.user.name[0]
-                                            : 'U',
-                                        style: const TextStyle(
-                                          fontSize: 48,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF1B5E20),
-                                        ),
-                                      ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: imageBytes != null
+                              ? Image.memory(
+                                  imageBytes,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                )
+                              : Center(
+                                  child: Text(
+                                    provider.user.name.isNotEmpty
+                                        ? provider.user.name[0]
+                                        : 'U',
+                                    style: const TextStyle(
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1B5E20),
                                     ),
-                            ),
-                          ),
-                        ],
+                                  ),
+                                ),
+                        ),
                       ),
-
                       const SizedBox(height: AppTheme.spacingMd),
 
                       // Name and subtitle

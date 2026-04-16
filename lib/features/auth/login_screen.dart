@@ -8,6 +8,7 @@ import '../../core/constants/routes.dart';
 import '../../core/providers/app_provider.dart';
 import '../mood/mood_screen.dart';
 import 'auth_provider.dart';
+import 'forgot_password_page.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool isLogin;
@@ -340,60 +341,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                         TextButton(
                                           onPressed: loading
                                               ? null
-                                              : () async {
-                                                  final email = _emailController
-                                                      .text
-                                                      .trim();
-
-                                                  if (email.isEmpty) {
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text(
-                                                          "Please enter your email",
-                                                        ),
-                                                      ),
-                                                    );
-                                                    return;
-                                                  }
-
-                                                  try {
-                                                    await context
-                                                        .read<AuthProvider>()
-                                                        .resetPassword(email);
-                                                    if (!context.mounted)
-                                                      return;
-
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text(
-                                                          "Check your email for reset link",
-                                                        ),
-                                                      ),
-                                                    );
-                                                  } on FirebaseAuthException catch (
-                                                    e
-                                                  ) {
-                                                    String message =
-                                                        "Something went wrong";
-
-                                                    if (e.code ==
-                                                        'user-not-found') {
-                                                      message =
-                                                          "Email นี้ไม่มีในระบบ";
-                                                    }
-
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(message),
-                                                      ),
-                                                    );
-                                                  }
+                                              : () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (_) =>
+                                                          const ForgotPasswordPage(),
+                                                    ),
+                                                  );
                                                 },
                                           style: TextButton.styleFrom(
                                             padding: EdgeInsets.zero,
