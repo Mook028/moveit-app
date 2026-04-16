@@ -561,11 +561,11 @@ class ProfileScreen extends StatelessWidget {
                           color: const Color(0xFFFFCDD2),
                           width: 1,
                         ),
-                        onTap: () async {
-                          await context
-                              .read<local_auth.AuthProvider>()
-                              .logout();
-                          if (context.mounted) context.go(Routes.login);
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => LogoutDialog(),
+                          );
                         },
                         child: const Row(
                           children: [
@@ -599,6 +599,89 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: const CustomBottomNav(current: Routes.profile),
+    );
+  }
+}
+
+class LogoutDialog extends StatelessWidget {
+  const LogoutDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.white,
+      contentPadding: EdgeInsets.zero,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 🔹 TEXT CONTENT
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: const [
+                Text(
+                  "Log Out",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Are you sure you want to log out?",
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(height: 1),
+
+          // 🔹 BUTTONS (แบบรูปที่ 2)
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(15),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      "Cancel",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                ),
+              ),
+
+              Container(width: 1, height: 50, color: Colors.grey[300]),
+
+              Expanded(
+                child: InkWell(
+                  onTap: () async {
+                    Navigator.pop(context);
+
+                    await context.read<local_auth.AuthProvider>().logout();
+
+                    if (context.mounted) {
+                      context.go(Routes.login);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(15),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      "OK",
+                      style: TextStyle(
+                        color: Color(0xFF2E7D32), // เขียว MoveIT
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
