@@ -15,7 +15,6 @@ import '../../features/auth/login_screen.dart';
 import '../../features/auth/auth_provider.dart';
 
 import '../../landing/landing_page.dart';
-import '../../core/theme/app_theme.dart';
 
 final GoRouter appRouter = GoRouter(
   // ignore initialLocation -- redirect logic will handle unauthenticated users

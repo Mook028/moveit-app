@@ -7,7 +7,6 @@ import '../../models/user.dart';
 import '../../services/user_service.dart';
 import 'dart:convert';
 import 'dart:typed_data';
-import '../../core/theme/app_theme.dart';
 
 enum DayStatus { none, someComplete, allComplete, inProgress }
 

@@ -8,7 +8,6 @@ import '../../core/constants/routes.dart';
 import '../../core/providers/app_provider.dart';
 import '../mood/mood_screen.dart';
 import 'auth_provider.dart';
-import '../../core/theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool isLogin;
