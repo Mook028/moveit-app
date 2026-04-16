@@ -319,9 +319,13 @@ class _HomeScreenState extends State<HomeScreen> {
                               context.read<AppProvider>().unlockMood();
                               context.go(Routes.mood);
                             },
-                            child: const Text(
+                            child: Text(
                               "Change Mood",
-                              style: TextStyle(fontWeight: FontWeight.w600),
+
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: moodActionColor,
+                              ),
                             ),
                           ),
                         ],

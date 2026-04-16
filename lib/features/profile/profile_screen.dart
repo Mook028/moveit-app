@@ -189,7 +189,7 @@ class ProfileScreen extends StatelessWidget {
 
                             const Expanded(
                               child: Text(
-                                "Account Info",
+                                "Account ",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,

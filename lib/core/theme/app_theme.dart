@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Colors
@@ -62,19 +63,19 @@ class AppTheme {
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
+      textTheme: GoogleFonts.promptTextTheme().copyWith(
+        headlineLarge: const TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
           color: Color(0xFF1B5E20),
         ),
-        headlineMedium: TextStyle(
+        headlineMedium: const TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
           color: Color(0xFF1B5E20),
         ),
-        bodyLarge: TextStyle(fontSize: 16, color: Color(0xFF424242)),
-        bodyMedium: TextStyle(fontSize: 14, color: Color(0xFF616161)),
+        bodyLarge: const TextStyle(fontSize: 16, color: Color(0xFF424242)),
+        bodyMedium: const TextStyle(fontSize: 14, color: Color(0xFF616161)),
       ),
     );
   }

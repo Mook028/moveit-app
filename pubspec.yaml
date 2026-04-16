@@ -40,6 +40,7 @@ dependencies:
   firebase_storage: ^11.7.7
   image_picker: ^1.1.2
   shared_preferences: ^2.2.2
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -69,10 +70,13 @@ flutter:
     - assets/images/phone1.png
     - assets/images/phone2.png
     - assets/images/phone3.png
+    - assets/images/phone4.png
     - assets/images/mood.png
     - assets/images/tasks.png
+    - assets/images/tasks2.png
     - assets/images/stats.png
     - assets/images/me.png
+    - assets/images/fitness.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
