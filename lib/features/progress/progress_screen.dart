@@ -36,82 +36,79 @@ class ProgressScreen extends StatelessWidget {
                   horizontal: AppTheme.spacingMd,
                   vertical: AppTheme.spacingSm,
                 ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Top section: Greeting and Avatar
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          top: AppTheme.spacingMd,
-                          bottom: AppTheme.spacingLg,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Hello, ${provider.user.name} 👋',
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.headlineMedium,
-                                ),
-                              ],
-                            ),
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundColor: AppTheme.primary,
-                              child: Text(
-                                provider.user.name[0],
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top section: Greeting and Avatar
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: AppTheme.spacingMd,
+                        bottom: 12,
                       ),
-
-                      // Streak Card
-                      StreakCard(streak: provider.dailyStreak),
-
-                      const SizedBox(height: AppTheme.spacingLg),
-
-                      // Task Summary Section
-                      Row(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: TaskSummaryCard(
-                              title: 'Completed',
-                              count: completed,
-                              color: Colors.green,
-                              icon: Icons.check_circle,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Hello, ${provider.user.name} 👋',
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineMedium,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: AppTheme.spacingMd),
-                          Expanded(
-                            child: TaskSummaryCard(
-                              title: 'In Progress',
-                              count: inProgress,
-                              color: Colors.orange,
-                              icon: Icons.pending,
+                          CircleAvatar(
+                            radius: 24,
+                            backgroundColor: AppTheme.primary,
+                            child: Text(
+                              provider.user.name[0],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
                       ),
+                    ),
 
-                      const SizedBox(height: AppTheme.spacingLg),
+                    // Streak Card
+                    StreakCard(streak: provider.dailyStreak),
 
-                      // Calendar Section
-                      CalendarWidget(),
+                    const SizedBox(height: 5),
 
-                      const SizedBox(height: AppTheme.spacingLg),
-                    ],
-                  ),
+                    // Task Summary Section
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TaskSummaryCard(
+                            title: 'Completed',
+                            count: completed,
+                            color: Colors.green,
+                            icon: Icons.check_circle,
+                          ),
+                        ),
+                        const SizedBox(width: AppTheme.spacingMd),
+                        Expanded(
+                          child: TaskSummaryCard(
+                            title: 'In Progress',
+                            count: inProgress,
+                            color: Colors.orange,
+                            icon: Icons.pending,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingLg),
+
+                    // Calendar Section
+                    Expanded(child: CalendarWidget()),
+                  ],
                 ),
               ),
             );
@@ -131,7 +128,7 @@ class StreakCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppTheme.spacingMd),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(
@@ -164,11 +161,11 @@ class StreakCard extends StatelessWidget {
                     color: Color(0xFF2E7D32),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   '$streak days',
                   style: const TextStyle(
-                    fontSize: 32,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1B5E20),
                   ),
@@ -176,12 +173,12 @@ class StreakCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Your current streak',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.track_changes, size: 48, color: Color(0xFF4CAF50)),
+          const Icon(Icons.track_changes, size: 40, color: Color(0xFF4CAF50)),
         ],
       ),
     );
@@ -230,7 +227,7 @@ class TaskSummaryCard extends StatelessWidget {
         border: Border.all(color: Colors.transparent, width: 0),
         child: Row(
           children: [
-            Icon(icon, color: accentColor, size: 24),
+            Icon(icon, color: accentColor, size: 20),
             const SizedBox(width: AppTheme.spacingSm),
             Expanded(
               child: Column(
@@ -247,7 +244,7 @@ class TaskSummaryCard extends StatelessWidget {
                   Text(
                     count.toString(),
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: accentColor,
                     ),
@@ -359,7 +356,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               ),
             ],
           ),
-          const SizedBox(height: AppTheme.spacingMd),
+          const SizedBox(height: 4),
 
           // Days of week
           Row(
@@ -381,84 +378,90 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 )
                 .toList(),
           ),
-          const SizedBox(height: AppTheme.spacingSm),
+          const SizedBox(height: 4),
 
           // Calendar grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              childAspectRatio: 1,
-            ),
-            itemCount:
-                _getDaysInMonth(currentMonth) +
-                (DateTime(currentMonth.year, currentMonth.month, 1).weekday %
-                    7),
-            itemBuilder: (context, index) {
-              final startWeekday =
-                  DateTime(currentMonth.year, currentMonth.month, 1).weekday %
-                  7;
-              if (index < startWeekday) {
-                return const SizedBox.shrink();
-              }
-              final day = index - startWeekday + 1;
-              final date = DateTime(currentMonth.year, currentMonth.month, day);
-              final isSelected =
-                  date.day == selectedDate.day &&
-                  date.month == selectedDate.month &&
-                  date.year == selectedDate.year;
+          Expanded(
+            child: GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                childAspectRatio: 1.45,
+              ),
+              itemCount:
+                  _getDaysInMonth(currentMonth) +
+                  (DateTime(currentMonth.year, currentMonth.month, 1).weekday %
+                      7),
+              itemBuilder: (context, index) {
+                final startWeekday =
+                    DateTime(currentMonth.year, currentMonth.month, 1).weekday %
+                    7;
+                if (index < startWeekday) {
+                  return const SizedBox.shrink();
+                }
+                final day = index - startWeekday + 1;
+                final date = DateTime(
+                  currentMonth.year,
+                  currentMonth.month,
+                  day,
+                );
+                final isSelected =
+                    date.day == selectedDate.day &&
+                    date.month == selectedDate.month &&
+                    date.year == selectedDate.year;
 
-              Color? backgroundColor;
-              final provider = context.watch<AppProvider>();
-              final status = provider.getDayStatus(date);
+                Color? backgroundColor;
+                final provider = context.watch<AppProvider>();
+                final status = provider.getDayStatus(date);
 
-              if (status == DayStatus.allComplete) {
-                backgroundColor = const Color(0xFF166534); // เขียวเข้ม
-              } else if (status == DayStatus.someComplete) {
-                backgroundColor = const Color(0xFF86EFAC); // เขียวอ่อน
-              } else if (status == DayStatus.inProgress) {
-                backgroundColor = const Color(0xFFFFD54F); // เหลือง
-              }
+                if (status == DayStatus.allComplete) {
+                  backgroundColor = const Color(0xFF166534); // เขียวเข้ม
+                } else if (status == DayStatus.someComplete) {
+                  backgroundColor = const Color(0xFF86EFAC); // เขียวอ่อน
+                } else if (status == DayStatus.inProgress) {
+                  backgroundColor = const Color(0xFFFFD54F); // เหลือง
+                }
 
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedDate = date;
-                  });
-                },
-                child: Container(
-                  margin: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: backgroundColor,
-                    borderRadius: BorderRadius.circular(10),
-                    border: isSelected
-                        ? Border.all(
-                            color: backgroundColor ?? AppTheme.primary,
-                            width: 2,
-                          )
-                        : null,
-                  ),
-                  child: Center(
-                    child: Text(
-                      day.toString(),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        color: backgroundColor != null
-                            ? Colors.white
-                            : Colors.black87,
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedDate = date;
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      borderRadius: BorderRadius.circular(10),
+                      border: isSelected
+                          ? Border.all(
+                              color: backgroundColor ?? AppTheme.primary,
+                              width: 2,
+                            )
+                          : null,
+                    ),
+
+                    child: Center(
+                      child: Text(
+                        day.toString(),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: backgroundColor != null
+                              ? Colors.white
+                              : Colors.black87,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
 
-          const SizedBox(height: AppTheme.spacingMd),
+          const SizedBox(height: 6),
 
           // Legend
           Row(
@@ -488,7 +491,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF757575)),
+          style: const TextStyle(fontSize: 11, color: Color(0xFF757575)),
         ),
       ],
     );

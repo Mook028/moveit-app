@@ -14,6 +14,8 @@ import '../../features/profile/profile_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/auth_provider.dart';
 
+import '../../landing/landing_page.dart';
+
 final GoRouter appRouter = GoRouter(
   // ignore initialLocation -- redirect logic will handle unauthenticated users
   initialLocation: Routes.login,
@@ -25,6 +27,11 @@ final GoRouter appRouter = GoRouter(
     // Prefer matchedLocation for route checks and fall back to URI matching for web/hash URLs.
     final matchedLocation = state.matchedLocation;
     final currentUri = state.uri.toString();
+
+    final isLandingPage =
+        matchedLocation == '/landingpage' ||
+        currentUri.contains('/landingpage');
+
     final isAuthRoute =
         matchedLocation == Routes.login ||
         matchedLocation == Routes.register ||
@@ -41,7 +48,9 @@ final GoRouter appRouter = GoRouter(
     appProvider.evaluateDayBoundaryOnAppOpen();
 
     // If not logged in, allow only auth routes (login/register).
-    if (!isLoggedIn && !isAuthRoute) return Routes.login;
+    if (!isLoggedIn && !isAuthRoute && !isLandingPage) {
+      return Routes.login;
+    }
 
     // Keep login as first screen on app start.
     if (matchedLocation == Routes.login) {
@@ -71,6 +80,12 @@ final GoRouter appRouter = GoRouter(
       path: Routes.profile,
       builder: (context, state) => const ProfileScreen(),
     ),
+
+    GoRoute(
+      path: '/landingpage',
+      builder: (context, state) => const LandingPage(),
+    ),
+
     // auth routes
     GoRoute(
       path: Routes.login,

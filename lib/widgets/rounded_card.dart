@@ -12,7 +12,7 @@ class RoundedCard extends StatelessWidget {
     super.key,
     required this.child,
     this.onTap,
-    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+    this.padding = const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
     this.backgroundColor,
     this.border,
   });
