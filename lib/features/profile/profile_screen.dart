@@ -6,18 +6,45 @@ import '../../core/providers/app_provider.dart';
 import '../../widgets/rounded_card.dart';
 import '../../widgets/custom_bottom_nav.dart';
 import 'package:go_router/go_router.dart';
-import '../auth/auth_provider.dart';
+import '../auth/auth_provider.dart' as local_auth;
 import 'edit_profile_screen.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:moveit/features/profile/privacy_policy_page.dart';
+import 'account_page.dart';
+import 'package:moveit/services/notification_service.dart';
+import 'change_password_page.dart';
+import 'guidelines_page.dart';
+import 'contact_us_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+  Future<void> _deleteAccount(BuildContext context) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        await user.delete();
+
+        Navigator.of(context).popUntil((route) => route.isFirst);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Account deleted successfully")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final imagePath = context.watch<AppProvider>().profileImagePath;
+    final imageBytes = context.watch<AppProvider>().profileImageBytes;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -43,7 +70,6 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: AppTheme.spacingLg),
 
-                      // Avatar
                       Stack(
                         children: [
                           Container(
@@ -61,24 +87,28 @@ class ProfileScreen extends StatelessWidget {
                               ],
                               color: Colors.grey[300],
                             ),
-
                             child: ClipOval(
-                              child: imagePath != null
-                                  ? kIsWeb
-                                        //  Web Image.network
+                              child: imageBytes != null
+                                  ? Image.memory(
+                                      imageBytes,
+                                      fit: BoxFit.cover,
+                                      width: 128,
+                                      height: 128,
+                                    )
+                                  : imagePath != null
+                                  ? (kIsWeb
                                         ? Image.network(
                                             imagePath,
                                             fit: BoxFit.cover,
                                             width: 128,
                                             height: 128,
                                           )
-                                        //  Mobile Image.file
                                         : Image.file(
                                             File(imagePath),
                                             fit: BoxFit.cover,
                                             width: 128,
                                             height: 128,
-                                          )
+                                          ))
                                   : Center(
                                       child: Text(
                                         provider.user.name.isNotEmpty
@@ -181,6 +211,14 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: 8),
 
                       RoundedCard(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AccountPage(),
+                            ),
+                          );
+                        },
                         child: Row(
                           children: [
                             const Icon(Icons.person_outline),
@@ -217,7 +255,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
 
-                      // 🔔 Daily Reminder
+                      //  Daily Reminder
                       RoundedCard(
                         child: SizedBox(
                           height: 25,
@@ -241,7 +279,16 @@ class ProfileScreen extends StatelessWidget {
                                 scale: 0.85,
                                 child: Switch(
                                   value: provider.reminderEnabled,
-                                  onChanged: (_) => provider.toggleReminder(),
+                                  onChanged: (value) async {
+                                    provider.toggleReminder();
+                                    if (!kIsWeb) {
+                                      if (value) {
+                                        await NotificationService.scheduleDaily(); // เปิด
+                                      } else {
+                                        await NotificationService.cancelAll(); //  ปิด
+                                      }
+                                    }
+                                  },
                                 ),
                               ),
                             ],
@@ -251,6 +298,14 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: 12),
 
                       RoundedCard(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ChangePasswordPage(),
+                            ),
+                          );
+                        },
                         child: Row(
                           children: [
                             const Icon(Icons.lock_outline),
@@ -324,24 +379,47 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: 12),
 
                       RoundedCard(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GuidelinesPage(),
+                            ),
+                          );
+                        },
                         child: Row(
                           children: [
-                            Icon(Icons.gavel),
+                            const Icon(Icons.gavel),
                             const SizedBox(width: 12),
-                            const Expanded(child: Text("Community Rules")),
+                            const Expanded(
+                              child: Text(
+                                "Community Rules",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
                             const Icon(Icons.chevron_right),
                           ],
                         ),
                       ),
 
                       const SizedBox(height: 12),
+
                       RoundedCard(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PrivacyPolicyPage(),
+                            ),
+                          );
+                        },
                         child: Row(
                           children: [
                             const Icon(Icons.lock),
-
                             const SizedBox(width: 12),
-
                             const Expanded(
                               child: Text(
                                 "Privacy Policy",
@@ -351,35 +429,126 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-
                             const Icon(Icons.chevron_right),
                           ],
                         ),
                       ),
+
                       const SizedBox(height: 12),
 
                       RoundedCard(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ContactUsPage(),
+                            ),
+                          );
+                        },
                         child: Row(
                           children: [
-                            Icon(Icons.mail_outline),
+                            const Icon(Icons.mail_outline),
                             const SizedBox(width: 12),
                             const Expanded(child: Text("Contact Us")),
                             const Icon(Icons.chevron_right),
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 12),
 
                       RoundedCard(
-                        child: Row(
-                          children: [
-                            Icon(Icons.person_remove_outlined),
-                            const SizedBox(width: 12),
-                            const Expanded(
-                              child: Text("Request Account Deletion"),
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  //  ข้อความ
+                                  const Padding(
+                                    padding: EdgeInsets.all(20),
+                                    child: Text(
+                                      "We're sorry to see you go. Once deleted, your account cannot be recovered.",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+
+                                  const Divider(height: 1),
+
+                                  IntrinsicHeight(
+                                    child: Row(
+                                      children: [
+                                        //  Cancel
+                                        Expanded(
+                                          child: InkWell(
+                                            onTap: () => Navigator.pop(context),
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 14,
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  "Cancel",
+                                                  style: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                        const VerticalDivider(width: 1),
+
+                                        // OK
+                                        Expanded(
+                                          child: InkWell(
+                                            onTap: () async {
+                                              Navigator.pop(context);
+                                              await _deleteAccount(context);
+                                            },
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 14,
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  "OK",
+                                                  style: TextStyle(
+                                                    color: Color(0xFF2E7D32),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            const Icon(Icons.chevron_right),
+                          );
+                        },
+                        child: Row(
+                          children: const [
+                            Icon(Icons.person_remove_outlined),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                "Request Account Deletion",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            Icon(Icons.chevron_right),
                           ],
                         ),
                       ),
@@ -393,7 +562,9 @@ class ProfileScreen extends StatelessWidget {
                           width: 1,
                         ),
                         onTap: () async {
-                          await context.read<AuthProvider>().logout();
+                          await context
+                              .read<local_auth.AuthProvider>()
+                              .logout();
                           if (context.mounted) context.go(Routes.login);
                         },
                         child: const Row(

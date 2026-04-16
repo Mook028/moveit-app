@@ -6,11 +6,20 @@ import '../../models/task.dart';
 import '../../models/user.dart';
 import '../../services/user_service.dart';
 import 'dart:convert';
+import 'dart:typed_data';
+import '../../core/theme/app_theme.dart';
 
 enum DayStatus { none, someComplete, allComplete, inProgress }
 
 class AppProvider extends ChangeNotifier {
   static const String _lastActiveDateKey = 'lastActiveDate';
+
+  Uint8List? profileImageBytes;
+
+  void setProfileImageBytes(Uint8List bytes) {
+    profileImageBytes = bytes;
+    notifyListeners();
+  }
 
   late UserProfile user;
   String? selectedMood;

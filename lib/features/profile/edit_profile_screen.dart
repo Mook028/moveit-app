@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 
 import '../../core/providers/app_provider.dart';
 import 'package:flutter/foundation.dart';
+import '../../core/theme/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -63,7 +65,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (pickedFile == null) return;
 
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('profile_image', pickedFile.path);
+
       if (!mounted) return;
+
+      // update UI
       context.read<AppProvider>().setProfileImage(pickedFile.path);
     } catch (e) {
       debugPrint('Image pick error: $e');
@@ -89,123 +96,84 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFA8D5BA), Color(0xFFBFE3D0), Color(0xFFEAF5EF)],
-          ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -80,
-              right: -70,
-              child: _decorativeBlob(
-                size: 220,
-                color: _lightGreen,
-                alpha: 0.18,
-              ),
-            ),
-            SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildTopBar(),
-                      const SizedBox(height: 22),
-                      _buildAvatarSection(context),
-                      const SizedBox(height: 24),
-                      _LabeledInputField(
-                        label: 'Name',
-                        controller: _nameController,
-                        hintText: 'Enter your name',
-                      ),
-                      const SizedBox(height: 18),
-                      _LabeledInputField(
-                        label: 'Email address',
-                        controller: _emailController,
-                        hintText: 'Enter your email',
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 18),
-                      _LabeledInputField(
-                        label: 'Username',
-                        controller: _usernameController,
-                        hintText: 'Enter your username',
-                      ),
-                      const SizedBox(height: 18),
-                      _LabeledInputField(
-                        label: 'Password',
-                        controller: _passwordController,
-                        hintText: 'Enter your password',
-                        obscureText: _obscurePassword,
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off_rounded
-                                : Icons.visibility_rounded,
-                            color: _primaryGreen.withValues(alpha: 0.75),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+      backgroundColor: const Color(0xFFCCF0DF).withOpacity(0.5),
 
-  Widget _buildTopBar() {
-    return Row(
-      children: [
-        _RoundIconButton(
-          icon: Icons.arrow_back_ios_new_rounded,
-          onTap: () => Navigator.of(context).maybePop(),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2E7D32)),
+          onPressed: () => Navigator.pop(context),
         ),
-        const Expanded(
-          child: Text(
-            'Edit Profile',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF1B5E20),
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.2,
-              shadows: [
-                Shadow(
-                  color: Colors.black26,
-                  blurRadius: 2,
-                  offset: Offset(0, 1),
+        title: const Text(
+          "Edit Profile",
+          style: TextStyle(color: Color(0xFF2E7D32)),
+        ),
+        centerTitle: true,
+      ),
+
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 18, 22, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 10),
+                _buildAvatarSection(context),
+                const SizedBox(height: 24),
+                _LabeledInputField(
+                  label: 'Name',
+                  controller: _nameController,
+                  hintText: 'Enter your name',
+                ),
+                const SizedBox(height: 18),
+                _LabeledInputField(
+                  label: 'Email address',
+                  controller: _emailController,
+                  hintText: 'Enter your email',
+                  keyboardType: TextInputType.emailAddress,
+                  enabled: false,
+                ),
+                const SizedBox(height: 8),
+
+                const Text(
+                  "Registered email cannot be changed",
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 30),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _onSave,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF76C58C),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      "Save Changes",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
-        _RoundIconButton(icon: Icons.check_rounded, onTap: _onSave),
-      ],
+      ),
     );
   }
 
   Widget _buildAvatarSection(BuildContext context) {
-    final imagePath = context.watch<AppProvider>().profileImagePath;
-
     return Center(
       child: Stack(
         clipBehavior: Clip.none,
@@ -233,26 +201,37 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ],
             ),
-            child: CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.white,
-              backgroundImage: imagePath != null
-                  ? (kIsWeb
-                        ? NetworkImage(imagePath)
-                        : FileImage(File(imagePath)) as ImageProvider)
-                  : null,
-              child: imagePath == null
-                  ? const Icon(Icons.person_rounded)
-                  : null,
+
+            // 🔥 ใช้ Consumer + Image.memory
+            child: Consumer<AppProvider>(
+              builder: (context, provider, child) {
+                return ClipOval(
+                  child: provider.profileImageBytes != null
+                      ? Image.memory(
+                          provider.profileImageBytes!,
+                          width: 116,
+                          height: 116,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          color: Colors.white,
+                          child: const Icon(Icons.person_rounded, size: 40),
+                        ),
+                );
+              },
             ),
           ),
+
+          // 📸 ปุ่มกล้อง
           Positioned(
             right: -4,
             bottom: -2,
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: _onPickAvatar,
+                onTap: () {
+                  _showPhotoOptions(context);
+                },
                 borderRadius: BorderRadius.circular(20),
                 child: Ink(
                   width: 38,
@@ -282,6 +261,71 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  Future<void> _showPhotoOptions(BuildContext context) async {
+    final parentContext = context; // ใช้ context ของหน้า EditProfileScreen
+
+    showDialog(
+      context: parentContext,
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Update Profile Photo",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: () async {
+                  Navigator.pop(dialogContext); // ปิด dialog ด้วย dialogContext
+
+                  final picker = ImagePicker();
+                  final XFile? pickedFile = await picker.pickImage(
+                    source: ImageSource.gallery,
+                    imageQuality: 80,
+                  );
+
+                  if (pickedFile == null || !mounted) return;
+
+                  final bytes = await pickedFile.readAsBytes();
+                  context.read<AppProvider>().setProfileImageBytes(bytes);
+
+                  await _onPickAvatar(); // เรียกฟังก์ชันเดิมเพื่อบันทึก path และอัปเดต UI
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF2F5F3),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.image, color: Colors.green),
+                      SizedBox(width: 12),
+                      Text(
+                        "Choose from Gallery",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text("Cancel"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _decorativeBlob({
     required double size,
     required Color color,
@@ -307,6 +351,7 @@ class _LabeledInputField extends StatelessWidget {
   final TextInputType keyboardType;
   final bool obscureText;
   final Widget? suffixIcon;
+  final bool enabled;
 
   const _LabeledInputField({
     required this.label,
@@ -315,6 +360,7 @@ class _LabeledInputField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.suffixIcon,
+    this.enabled = true,
   });
 
   @override
@@ -345,6 +391,7 @@ class _LabeledInputField extends StatelessWidget {
           ),
           child: TextField(
             controller: controller,
+            enabled: enabled,
             keyboardType: keyboardType,
             obscureText: obscureText,
             style: const TextStyle(

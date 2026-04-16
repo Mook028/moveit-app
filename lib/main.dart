@@ -11,12 +11,14 @@ import 'firebase_options.dart';
 import 'landing/landing_page.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
+import 'services/notification_service.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   setUrlStrategy(PathUrlStrategy());
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
+  await NotificationService.init();
   runApp(const MoveItApp());
 }
 
@@ -28,12 +30,15 @@ class MoveItApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-
         ChangeNotifierProvider(
           create: (_) {
             final provider = AppProvider();
-            provider.loadProfileImage();
-            provider.loadStatus();
+
+            Future.microtask(() async {
+              await provider.loadProfileImage();
+              await provider.loadStatus();
+            });
+
             return provider;
           },
         ),

@@ -8,6 +8,7 @@ import '../../core/constants/routes.dart';
 import '../../core/providers/app_provider.dart';
 import '../mood/mood_screen.dart';
 import 'auth_provider.dart';
+import '../../core/theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool isLogin;
@@ -259,8 +260,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(28),
                               boxShadow: [
                                 BoxShadow(
-                                      color: const Color(0xFF4A9D87)
-                                          .withValues(alpha: 0.15),
+                                  color: const Color(
+                                    0xFF4A9D87,
+                                  ).withValues(alpha: 0.15),
                                   blurRadius: 25,
                                   offset: const Offset(0, 10),
                                 ),
@@ -361,7 +363,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                                     await context
                                                         .read<AuthProvider>()
                                                         .resetPassword(email);
-                                                    if (!context.mounted) return;
+                                                    if (!context.mounted)
+                                                      return;
 
                                                     ScaffoldMessenger.of(
                                                       context,
@@ -425,7 +428,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: Colors.red.withValues(alpha: 0.1),
+                                        color: Colors.red.withValues(
+                                          alpha: 0.1,
+                                        ),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
