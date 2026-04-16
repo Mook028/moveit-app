@@ -34,7 +34,7 @@ class AppTheme {
         brightness: Brightness.light,
       ).copyWith(surface: background),
 
-      // ✅ AppBar ใช้ Prompt
+      //  AppBar ใช้ Prompt
       appBarTheme: AppBarTheme(
         backgroundColor: background,
         elevation: 0,
@@ -46,7 +46,7 @@ class AppTheme {
         ),
       ),
 
-      // ✅ Card
+      //  Card
       cardTheme: CardThemeData(
         color: cardBackground,
         elevation: 2,
@@ -57,7 +57,7 @@ class AppTheme {
         ),
       ),
 
-      // ✅ Button ใช้ Prompt
+      // Button ใช้ Prompt
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
@@ -76,7 +76,7 @@ class AppTheme {
         ),
       ),
 
-      // ✅ FONT ทั้งแอป (สำคัญสุด)
+      //  FONT ทั้งแอป
       textTheme: GoogleFonts.promptTextTheme()
           .apply(
             bodyColor: const Color(0xFF424242),
@@ -86,13 +86,21 @@ class AppTheme {
             headlineLarge: GoogleFonts.prompt(
               fontSize: 32,
               fontWeight: FontWeight.bold,
+              color: const Color(0xFF1B5E20),
             ),
             headlineMedium: GoogleFonts.prompt(
               fontSize: 24,
               fontWeight: FontWeight.bold,
+              color: const Color(0xFF1B5E20),
             ),
-            bodyLarge: GoogleFonts.prompt(fontSize: 16),
-            bodyMedium: GoogleFonts.prompt(fontSize: 14),
+            bodyLarge: GoogleFonts.prompt(
+              fontSize: 16,
+              color: const Color(0xFF424242),
+            ),
+            bodyMedium: GoogleFonts.prompt(
+              fontSize: 14,
+              color: const Color(0xFF424242),
+            ),
           ),
     );
   }
