@@ -204,6 +204,7 @@ class LandingPage extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(width: 40),
             // 🔥 FEATURES ICONS
             Padding(
               padding: const EdgeInsets.all(40),
@@ -218,13 +219,90 @@ class LandingPage extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(width: 40),
+
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 60),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: Image.asset('assets/images/phone2.png', width: 250),
+                  ),
+
+                  const SizedBox(width: 40),
+
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: const [
+                        FeatureRow(Icons.play_circle, "3D Video Show"),
+                        SizedBox(height: 20),
+                        FeatureRow(Icons.palette, "Infinite Colors"),
+                        SizedBox(height: 20),
+                        FeatureRow(Icons.update, "Free Updates"),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 40),
+
+                  Expanded(
+                    flex: 5,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "How to Use MoveIT",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        SizedBox(height: 20),
+
+                        StepItem(
+                          "1. Choose your mood",
+                          "Select how you feel today to personalize your plan.",
+                        ),
+
+                        SizedBox(height: 15),
+
+                        StepItem(
+                          "2. Follow daily tasks",
+                          "Complete activities tailored to your energy level.",
+                        ),
+
+                        SizedBox(height: 15),
+
+                        StepItem(
+                          "3. Track your progress",
+                          "Monitor your streaks and daily improvements.",
+                        ),
+
+                        SizedBox(height: 15),
+
+                        StepItem(
+                          "4. Stay consistent",
+                          "Build healthy habits with reminders and insights.",
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             // 🔥 SCREENSHOT SECTION
             Padding(
               padding: const EdgeInsets.all(40),
               child: Column(
                 children: [
                   const Text(
-                    "APP PREVIEW",
+                    "OUR SCREENSHOT",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
@@ -286,6 +364,55 @@ class FeatureItem extends StatelessWidget {
         Icon(icon, size: 40, color: Color(0xFF2D6A4F)),
         const SizedBox(height: 10),
         Text(title),
+      ],
+    );
+  }
+}
+
+class FeatureRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+
+  const FeatureRow(this.icon, this.title, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 20,
+          backgroundColor: Color(0xFFEDE9FE),
+          child: Icon(icon, color: Colors.purple),
+        ),
+        const SizedBox(width: 15),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+}
+
+class StepItem extends StatelessWidget {
+  final String title;
+  final String desc;
+
+  const StepItem(this.title, this.desc, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.check_circle, color: Color(0xFF2D6A4F)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(desc, style: const TextStyle(color: Colors.black54)),
+            ],
+          ),
+        ),
       ],
     );
   }
