@@ -7,6 +7,7 @@ class AppTheme {
   static const Color primaryDark = Color(0xFF2E7D32);
   static const Color background = Color(0xFFF6FBF7);
   static const Color cardBackground = Color(0xFFFFFFFF);
+
   static const Color accentEnergetic = Color(0xFFA5D6A7);
   static const Color accentNormal = Color(0xFFFFF59D);
   static const Color accentTired = Color(0xFFCFD8DC);
@@ -24,22 +25,28 @@ class AppTheme {
   static ThemeData light() {
     return ThemeData(
       useMaterial3: true,
+
       primaryColor: primary,
       scaffoldBackgroundColor: background,
+
       colorScheme: ColorScheme.fromSeed(
         seedColor: primary,
         brightness: Brightness.light,
       ).copyWith(surface: background),
-      appBarTheme: const AppBarTheme(
+
+      // ✅ AppBar ใช้ Prompt
+      appBarTheme: AppBarTheme(
         backgroundColor: background,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
-          color: Color(0xFF1B5E20),
+        titleTextStyle: GoogleFonts.prompt(
+          color: const Color(0xFF1B5E20),
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),
       ),
+
+      // ✅ Card
       cardTheme: CardThemeData(
         color: cardBackground,
         elevation: 2,
@@ -49,6 +56,8 @@ class AppTheme {
           side: BorderSide(color: Colors.grey[200]!, width: 1),
         ),
       ),
+
+      // ✅ Button ใช้ Prompt
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
@@ -60,23 +69,31 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusLg),
           ),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textStyle: GoogleFonts.prompt(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
-      textTheme: GoogleFonts.promptTextTheme().copyWith(
-        headlineLarge: const TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF1B5E20),
-        ),
-        headlineMedium: const TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF1B5E20),
-        ),
-        bodyLarge: const TextStyle(fontSize: 16, color: Color(0xFF424242)),
-        bodyMedium: const TextStyle(fontSize: 14, color: Color(0xFF616161)),
-      ),
+
+      // ✅ FONT ทั้งแอป (สำคัญสุด)
+      textTheme: GoogleFonts.promptTextTheme()
+          .apply(
+            bodyColor: const Color(0xFF424242),
+            displayColor: const Color(0xFF1B5E20),
+          )
+          .copyWith(
+            headlineLarge: GoogleFonts.prompt(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+            ),
+            headlineMedium: GoogleFonts.prompt(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+            bodyLarge: GoogleFonts.prompt(fontSize: 16),
+            bodyMedium: GoogleFonts.prompt(fontSize: 14),
+          ),
     );
   }
 }
