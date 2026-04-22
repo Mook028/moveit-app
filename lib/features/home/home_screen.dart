@@ -112,244 +112,208 @@ class _HomeScreenState extends State<HomeScreen> {
                   horizontal: AppTheme.spacingMd,
                   vertical: AppTheme.spacingSm,
                 ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppTheme.spacingLg,
-                          horizontal: AppTheme.spacingMd,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(82),
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(
-                            color: Colors.white.withAlpha(115),
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(18),
-                              blurRadius: 14,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              moodLabel.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: const Color(0xFF1B5E20),
-                                letterSpacing: 2,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              "Today's specialized goals",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF6B7280),
-                              ),
-                            ),
-                          ],
-                        ),
+                child: Column(
+                  children: [
+                    const Spacer(), // ดันลง
+                    /// 🔹 HEADER
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppTheme.spacingLg,
+                        horizontal: AppTheme.spacingMd,
                       ),
-
-                      const SizedBox(height: AppTheme.spacingLg),
-
-                      if (showMoodContent) ...[
-                        ...provider.tasks.map((t) {
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: AppTheme.spacingSm,
-                            ),
-                            child: RoundedCard(
-                              onTap: () {
-                                provider.toggleTask(t.id);
-
-                                // ดึงค่าใหม่หลัง toggle
-                                final updatedTasks = context
-                                    .read<AppProvider>()
-                                    .tasks;
-                                final completed = updatedTasks
-                                    .where((t) => t.completed)
-                                    .length;
-
-                                if (updatedTasks.isEmpty) {
-                                  context.read<AppProvider>().setDayStatus(
-                                    DateTime.now(),
-                                    DayStatus.none,
-                                  );
-                                } else if (completed == updatedTasks.length) {
-                                  context.read<AppProvider>().setDayStatus(
-                                    DateTime.now(),
-                                    DayStatus.allComplete,
-                                  );
-                                } else if (completed > 0) {
-                                  context.read<AppProvider>().setDayStatus(
-                                    DateTime.now(),
-                                    DayStatus.someComplete,
-                                  );
-                                } else {
-                                  context.read<AppProvider>().setDayStatus(
-                                    DateTime.now(),
-                                    DayStatus.inProgress,
-                                  );
-                                }
-                              },
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: t.completed
-                                            ? AppTheme.primary
-                                            : Colors.grey[300]!,
-                                        width: 2,
-                                      ),
-                                      color: t.completed
-                                          ? AppTheme.primary
-                                          : Colors.transparent,
-                                    ),
-                                    child: t.completed
-                                        ? const Icon(
-                                            Icons.check,
-                                            size: 16,
-                                            color: Colors.white,
-                                          )
-                                        : null,
-                                  ),
-                                  const SizedBox(width: AppTheme.spacingSm),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          t.title,
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: t.completed
-                                                ? Colors.grey[400]
-                                                : Colors.grey[800],
-                                            decoration: t.completed
-                                                ? TextDecoration.lineThrough
-                                                : TextDecoration.none,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 4,
-                                          ),
-                                          child: Text(
-                                            '${t.duration} mins • ${t.mood}',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.grey[500],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-
-                        const SizedBox(height: AppTheme.spacingMd),
-
-                        if (provider.tasks.isNotEmpty) ...[
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              onPressed: () {
-                                provider.markAllAsDone();
-
-                                provider.setDayStatus(
-                                  DateTime.now(),
-                                  DayStatus.allComplete,
-                                );
-
-                                if (mounted) {
-                                  context.go(Routes.progress);
-                                }
-                              },
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: moodActionColor,
-                                  width: 2,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppTheme.radiusLg,
-                                  ),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: AppTheme.spacingMd,
-                                ),
-                              ),
-                              child: Text(
-                                'Mark All as Done',
-                                style: TextStyle(
-                                  color: moodActionColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(82),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: Colors.white.withAlpha(115),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(18),
+                            blurRadius: 14,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            moodLabel.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF1B5E20),
+                              letterSpacing: 2,
                             ),
                           ),
-
-                          const SizedBox(height: 12),
-
-                          TextButton(
-                            onPressed: () {
-                              context.read<AppProvider>().unlockMood();
-                              context.go(Routes.mood);
-                            },
-                            child: Text(
-                              "Change Mood",
-
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: moodActionColor,
-                              ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "Today's specialized goals",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF6B7280),
                             ),
                           ),
                         ],
-                      ] else ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: AppTheme.spacingLg * 3,
+                      ),
+                    ),
+
+                    const SizedBox(height: AppTheme.spacingLg),
+
+                    /// 🔹 TASK LIST
+                    if (showMoodContent) ...[
+                      ...provider.tasks.take(3).map((t) {
+                        //  จำกัดไม่ให้ล้น
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: AppTheme.spacingSm,
                           ),
-                          child: Center(
+                          child: RoundedCard(
+                            onTap: () {
+                              provider.toggleTask(t.id);
+                            },
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: t.completed
+                                          ? AppTheme.primary
+                                          : Colors.grey[300]!,
+                                      width: 2,
+                                    ),
+                                    color: t.completed
+                                        ? AppTheme.primary
+                                        : Colors.transparent,
+                                  ),
+                                  child: t.completed
+                                      ? const Icon(
+                                          Icons.check,
+                                          size: 16,
+                                          color: Colors.white,
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: AppTheme.spacingSm),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        t.title,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: t.completed
+                                              ? Colors.grey[400]
+                                              : Colors.grey[800],
+                                          decoration: t.completed
+                                              ? TextDecoration.lineThrough
+                                              : TextDecoration.none,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Text(
+                                          '${t.duration} mins • ${t.mood}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[500],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+
+                      const SizedBox(height: AppTheme.spacingMd),
+
+                      if (provider.tasks.isNotEmpty) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              provider.markAllAsDone();
+                              provider.setDayStatus(
+                                DateTime.now(),
+                                DayStatus.allComplete,
+                              );
+                              if (mounted) {
+                                context.go(Routes.progress);
+                              }
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color: moodActionColor,
+                                width: 2,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusLg,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: AppTheme.spacingMd,
+                              ),
+                            ),
                             child: Text(
-                              'No tasks yet. Select a mood first!',
+                              'Mark All as Done',
                               style: TextStyle(
-                                color: Colors.grey[500],
-                                fontStyle: FontStyle.italic,
+                                color: moodActionColor,
+                                fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                           ),
                         ),
-                      ],
 
-                      const SizedBox(height: AppTheme.spacingLg),
+                        const SizedBox(height: 12),
+
+                        TextButton(
+                          onPressed: () {
+                            context.read<AppProvider>().unlockMood();
+                            context.go(Routes.mood);
+                          },
+                          child: Text(
+                            "Change Mood",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: moodActionColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ] else ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppTheme.spacingLg * 2,
+                        ),
+                        child: Center(
+                          child: Text(
+                            'No tasks yet. Select a mood first!',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontStyle: FontStyle.italic,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                  ),
+
+                    const Spacer(), //  ดันขึ้น
+                  ],
                 ),
               ),
             ),

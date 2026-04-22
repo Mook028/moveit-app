@@ -346,19 +346,6 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(height: 8),
 
                       RoundedCard(
-                        child: Row(
-                          children: [
-                            Icon(Icons.help_outline),
-                            const SizedBox(width: 12),
-                            const Expanded(child: Text("Help Centre")),
-                            const Icon(Icons.chevron_right),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      RoundedCard(
                         onTap: () {
                           Navigator.push(
                             context,

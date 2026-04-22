@@ -21,7 +21,7 @@ class AccountPage extends StatelessWidget {
     final email = user?.email ?? "-";
 
     return Scaffold(
-      backgroundColor: const Color(0xFFCCF0DF).withOpacity(0.3),
+      backgroundColor: const Color(0xFFE6F7F0),
 
       appBar: AppBar(
         backgroundColor: Colors.transparent,

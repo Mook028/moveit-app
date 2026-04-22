@@ -28,7 +28,7 @@ class CustomBottomNav extends StatelessWidget {
         _navigate(context, routes[index]);
       },
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
       selectedItemColor: AppTheme.primary,
       unselectedItemColor: Colors.grey[400],
       elevation: 0,

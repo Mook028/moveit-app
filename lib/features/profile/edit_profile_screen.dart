@@ -9,6 +9,7 @@ import '../../core/providers/app_provider.dart';
 import 'package:flutter/foundation.dart';
 import '../../core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -56,6 +57,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _onPickAvatar() async {
     try {
+      // ขอ permission ก่อน
+      var status = await Permission.photos.request();
+
+      if (!status.isGranted) {
+        debugPrint("Permission denied");
+        return;
+      }
+
       final picker = ImagePicker();
 
       final XFile? pickedFile = await picker.pickImage(
@@ -70,7 +79,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (!mounted) return;
 
-      // update UI
       context.read<AppProvider>().setProfileImage(pickedFile.path);
     } catch (e) {
       debugPrint('Image pick error: $e');
@@ -96,7 +104,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFCCF0DF).withOpacity(0.5),
+      backgroundColor: const Color(0xFFE6F7F0),
 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -281,6 +289,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               InkWell(
                 onTap: () async {
                   Navigator.pop(dialogContext); // ปิด dialog ด้วย dialogContext
+
+                  var status = await Permission.photos.request();
+
+                  if (!status.isGranted) {
+                    debugPrint("Permission denied");
+                    return;
+                  }
 
                   final picker = ImagePicker();
                   final XFile? pickedFile = await picker.pickImage(

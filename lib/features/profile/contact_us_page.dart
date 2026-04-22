@@ -73,7 +73,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F7F0),
+      backgroundColor: const Color.fromARGB(255, 241, 245, 243),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
