@@ -104,6 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ? _getMoodActionColor(provider.selectedMood)
               : AppTheme.primary;
 
+          final hasCompletedTask = provider.tasks.any((t) => t.completed);
+
           return Container(
             decoration: BoxDecoration(gradient: moodBackgroundGradient),
             child: SafeArea(
@@ -282,6 +284,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         TextButton(
                           onPressed: () {
+                            if (hasCompletedTask) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Cannot change mood after completing a task",
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
                             context.read<AppProvider>().unlockMood();
                             context.go(Routes.mood);
                           },
@@ -289,7 +302,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             "Change Mood",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: moodActionColor,
+                              color: hasCompletedTask
+                                  ? Colors.grey
+                                  : moodActionColor,
                             ),
                           ),
                         ),

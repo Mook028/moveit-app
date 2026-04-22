@@ -6,6 +6,8 @@ import '../../core/providers/app_provider.dart';
 import '../../widgets/rounded_card.dart';
 import '../../widgets/custom_bottom_nav.dart';
 
+const double gap = 16;
+
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
 
@@ -26,62 +28,49 @@ class ProgressScreen extends StatelessWidget {
             final inProgress = provider.isMoodConfirmed
                 ? provider.tasks.where((t) => !t.completed).length
                 : 0;
+
             final completed = provider.isMoodConfirmed
                 ? provider.tasks.where((t) => t.completed).length
                 : 0;
 
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacingMd,
-                  vertical: AppTheme.spacingSm,
-                ),
-
+                padding: const EdgeInsets.all(gap),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Top section: Greeting and Avatar
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: AppTheme.spacingMd,
-                        bottom: 12,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Hello, ${provider.user.name} 👋',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineMedium,
-                              ),
-                            ],
-                          ),
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: AppTheme.primary,
-                            child: Text(
-                              provider.user.name[0],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    const Spacer(),
+
+                    /// HEADER
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Hello, ${provider.user.name} 👋',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: AppTheme.primary,
+                          child: Text(
+                            provider.user.name[0],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
 
-                    // Streak Card
+                    const SizedBox(height: gap),
+
+                    /// STREAK
                     StreakCard(streak: provider.dailyStreak),
 
-                    const SizedBox(height: 5),
+                    const SizedBox(height: gap),
 
-                    // Task Summary Section
+                    /// SUMMARY (สมดุล)
                     Row(
                       children: [
                         Expanded(
@@ -92,7 +81,7 @@ class ProgressScreen extends StatelessWidget {
                             icon: Icons.check_circle,
                           ),
                         ),
-                        const SizedBox(width: AppTheme.spacingMd),
+                        const SizedBox(width: gap),
                         Expanded(
                           child: TaskSummaryCard(
                             title: 'In Progress',
@@ -104,10 +93,12 @@ class ProgressScreen extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: AppTheme.spacingLg),
+                    const SizedBox(height: gap),
 
-                    // Calendar Section
-                    Expanded(child: CalendarWidget()),
+                    /// CALENDAR
+                    CalendarWidget(),
+
+                    const Spacer(),
                   ],
                 ),
               ),
@@ -232,6 +223,7 @@ class TaskSummaryCard extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+
                 children: [
                   Text(
                     title,
@@ -360,7 +352,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
           // Days of week
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
                 .map(
                   (day) => Expanded(
@@ -380,96 +371,113 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           ),
           const SizedBox(height: 4),
 
-          // Calendar grid
-          Expanded(
-            child: GridView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-                childAspectRatio: 1.45,
-              ),
-              itemCount:
-                  _getDaysInMonth(currentMonth) +
-                  (DateTime(currentMonth.year, currentMonth.month, 1).weekday %
-                      7),
-              itemBuilder: (context, index) {
-                final startWeekday =
-                    DateTime(currentMonth.year, currentMonth.month, 1).weekday %
-                    7;
-                if (index < startWeekday) {
-                  return const SizedBox.shrink();
-                }
-                final day = index - startWeekday + 1;
-                final date = DateTime(
-                  currentMonth.year,
-                  currentMonth.month,
-                  day,
-                );
-                final isSelected =
-                    date.day == selectedDate.day &&
-                    date.month == selectedDate.month &&
-                    date.year == selectedDate.year;
+          Column(
+            children: [
+              /// CALENDAR GRID
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  mainAxisSpacing: 6,
+                  crossAxisSpacing: 6,
+                  childAspectRatio: 1.1,
+                ),
+                itemCount:
+                    _getDaysInMonth(currentMonth) +
+                    (DateTime(
+                          currentMonth.year,
+                          currentMonth.month,
+                          1,
+                        ).weekday %
+                        7),
+                itemBuilder: (context, index) {
+                  final startWeekday =
+                      DateTime(
+                        currentMonth.year,
+                        currentMonth.month,
+                        1,
+                      ).weekday %
+                      7;
 
-                Color? backgroundColor;
-                final provider = context.watch<AppProvider>();
-                final status = provider.getDayStatus(date);
+                  if (index < startWeekday) {
+                    return const SizedBox.shrink();
+                  }
 
-                if (status == DayStatus.allComplete) {
-                  backgroundColor = const Color(0xFF166534); // เขียวเข้ม
-                } else if (status == DayStatus.someComplete) {
-                  backgroundColor = const Color(0xFF86EFAC); // เขียวอ่อน
-                } else if (status == DayStatus.inProgress) {
-                  backgroundColor = const Color(0xFFFFD54F); // เหลือง
-                }
+                  final day = index - startWeekday + 1;
+                  final date = DateTime(
+                    currentMonth.year,
+                    currentMonth.month,
+                    day,
+                  );
 
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedDate = date;
-                    });
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      borderRadius: BorderRadius.circular(10),
-                      border: isSelected
-                          ? Border.all(
-                              color: backgroundColor ?? AppTheme.primary,
-                              width: 2,
-                            )
-                          : null,
-                    ),
+                  final isSelected =
+                      date.day == selectedDate.day &&
+                      date.month == selectedDate.month &&
+                      date.year == selectedDate.year;
 
-                    child: Center(
-                      child: Text(
-                        day.toString(),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          color: backgroundColor != null
-                              ? Colors.white
-                              : Colors.black87,
+                  Color? backgroundColor;
+                  final provider = context.watch<AppProvider>();
+                  final status = provider.getDayStatus(date);
+
+                  if (status == DayStatus.allComplete) {
+                    backgroundColor = const Color(0xFF166534);
+                  } else if (status == DayStatus.someComplete) {
+                    backgroundColor = const Color(0xFF86EFAC);
+                  } else if (status == DayStatus.inProgress) {
+                    backgroundColor = const Color(0xFFFFD54F);
+                  }
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedDate = date;
+                      });
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: backgroundColor,
+                        borderRadius: BorderRadius.circular(10),
+                        border: isSelected
+                            ? Border.all(
+                                color: backgroundColor ?? AppTheme.primary,
+                                width: 2,
+                              )
+                            : null,
+                      ),
+                      child: Center(
+                        child: Text(
+                          day.toString(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: backgroundColor != null
+                                ? Colors.white
+                                : Colors.black87,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
+                  );
+                },
+              ),
 
-          const SizedBox(height: 6),
+              /// GAP
+              const SizedBox(height: 6),
 
-          // Legend
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildLegendItem('All complete', const Color(0xFF166534)),
-              _buildLegendItem('Some complete', const Color(0xFF86EFAC)),
-              _buildLegendItem('In progress', const Color(0xFFFFD54F)),
+              /// LEGEND
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildLegendItem('All complete', const Color(0xFF166534)),
+                  _buildLegendItem('Some complete', const Color(0xFF86EFAC)),
+                  _buildLegendItem('In progress', const Color(0xFFFFD54F)),
+                ],
+              ),
             ],
           ),
         ],
