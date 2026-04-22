@@ -46,6 +46,8 @@ dependencies:
   timezone: ^0.9.2
   url_launcher: ^6.2.5
   permission_handler: ^11.0.0
+  flutter_native_splash: ^2.4.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -81,6 +83,9 @@ flutter:
     - assets/images/stats.png
     - assets/images/me.png
     - assets/images/fitness.png
+    - assets/images/logo.png
+
+  
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -108,3 +113,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/logo.png
+  android: true
+  ios: true

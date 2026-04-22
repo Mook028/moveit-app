@@ -44,7 +44,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imagePath = context.watch<AppProvider>().profileImagePath;
-    final imageBytes = context.watch<AppProvider>().profileImageBytes;
+    Uint8List? imageBytes;
     final firebaseUser = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
@@ -85,9 +85,9 @@ class ProfileScreen extends StatelessWidget {
                           ],
                         ),
                         child: ClipOval(
-                          child: imageBytes != null
-                              ? Image.memory(
-                                  imageBytes,
+                          child: imagePath != null
+                              ? Image.file(
+                                  File(imagePath),
                                   fit: BoxFit.cover,
                                   width: double.infinity,
                                   height: double.infinity,
@@ -106,6 +106,7 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                         ),
                       ),
+
                       const SizedBox(height: AppTheme.spacingMd),
 
                       // Name and subtitle
@@ -535,6 +536,7 @@ class ProfileScreen extends StatelessWidget {
                           );
                         },
                         child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.logout,

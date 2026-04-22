@@ -59,12 +59,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       // ขอ permission ก่อน
       var status = await Permission.photos.request();
-
       if (!status.isGranted) {
         debugPrint("Permission denied");
         return;
       }
-
       final picker = ImagePicker();
 
       final XFile? pickedFile = await picker.pickImage(
@@ -73,6 +71,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
 
       if (pickedFile == null) return;
+
+      final bytes = await pickedFile.readAsBytes();
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('profile_image', pickedFile.path);
@@ -210,18 +210,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ],
             ),
 
-            // 🔥 ใช้ Consumer + Image.memory
+            //  Avatar
             child: Consumer<AppProvider>(
               builder: (context, provider, child) {
                 return ClipOval(
-                  child: provider.profileImageBytes != null
-                      ? Image.memory(
-                          provider.profileImageBytes!,
+                  child: provider.profileImagePath != null
+                      ? Image.file(
+                          File(provider.profileImagePath!),
                           width: 116,
                           height: 116,
                           fit: BoxFit.cover,
                         )
                       : Container(
+                          width: 116,
+                          height: 116,
                           color: Colors.white,
                           child: const Icon(Icons.person_rounded, size: 40),
                         ),
@@ -230,7 +232,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
 
-          // 📸 ปุ่มกล้อง
+          // ปุ่มกล้อง
           Positioned(
             right: -4,
             bottom: -2,
@@ -270,10 +272,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _showPhotoOptions(BuildContext context) async {
-    final parentContext = context; // ใช้ context ของหน้า EditProfileScreen
-
     showDialog(
-      context: parentContext,
+      context: context,
       builder: (dialogContext) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
@@ -286,29 +286,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
+
               InkWell(
                 onTap: () async {
-                  Navigator.pop(dialogContext); // ปิด dialog ด้วย dialogContext
-
-                  var status = await Permission.photos.request();
-
-                  if (!status.isGranted) {
-                    debugPrint("Permission denied");
-                    return;
-                  }
-
-                  final picker = ImagePicker();
-                  final XFile? pickedFile = await picker.pickImage(
-                    source: ImageSource.gallery,
-                    imageQuality: 80,
-                  );
-
-                  if (pickedFile == null || !mounted) return;
-
-                  final bytes = await pickedFile.readAsBytes();
-                  context.read<AppProvider>().setProfileImageBytes(bytes);
-
-                  await _onPickAvatar(); // เรียกฟังก์ชันเดิมเพื่อบันทึก path และอัปเดต UI
+                  Navigator.pop(dialogContext);
+                  await _onPickAvatar();
                 },
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
@@ -329,7 +311,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 12),
+
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext),
                 child: const Text("Cancel"),

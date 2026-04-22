@@ -13,13 +13,6 @@ enum DayStatus { none, someComplete, allComplete, inProgress }
 class AppProvider extends ChangeNotifier {
   static const String _lastActiveDateKey = 'lastActiveDate';
 
-  Uint8List? profileImageBytes;
-
-  void setProfileImageBytes(Uint8List bytes) {
-    profileImageBytes = bytes;
-    notifyListeners();
-  }
-
   late UserProfile user;
   String? selectedMood;
   String? profileImagePath;

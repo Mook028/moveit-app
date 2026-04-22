@@ -5,6 +5,8 @@ import '../../core/constants/routes.dart';
 import '../../core/providers/app_provider.dart';
 import '../../widgets/rounded_card.dart';
 import '../../widgets/custom_bottom_nav.dart';
+import 'package:go_router/go_router.dart';
+import 'dart:io';
 
 const double gap = 16;
 
@@ -49,15 +51,27 @@ class ProgressScreen extends StatelessWidget {
                           'Hello, ${provider.user.name} 👋',
                           style: Theme.of(context).textTheme.headlineMedium,
                         ),
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: AppTheme.primary,
-                          child: Text(
-                            provider.user.name[0],
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+
+                        InkWell(
+                          onTap: () {
+                            context.go(Routes.profile);
+                          },
+                          borderRadius: BorderRadius.circular(50),
+                          child: CircleAvatar(
+                            radius: 24,
+                            backgroundColor: AppTheme.primary,
+                            backgroundImage: provider.profileImagePath != null
+                                ? FileImage(File(provider.profileImagePath!))
+                                : null,
+                            child: provider.profileImagePath == null
+                                ? Text(
+                                    provider.user.name[0],
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : null,
                           ),
                         ),
                       ],

@@ -15,16 +15,16 @@ import '../../features/auth/login_screen.dart';
 import '../../features/auth/auth_provider.dart';
 
 import '../../landing/landing_page.dart';
+import '../../features/auth/splash_screen.dart';
 
 final GoRouter appRouter = GoRouter(
-  // ignore initialLocation -- redirect logic will handle unauthenticated users
-  initialLocation: Routes.login,
+  initialLocation: '/', //  Splash
+
   redirect: (context, state) {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final appProvider = Provider.of<AppProvider>(context, listen: false);
     final isLoggedIn = auth.user != null;
 
-    // Prefer matchedLocation for route checks and fall back to URI matching for web/hash URLs.
     final matchedLocation = state.matchedLocation;
     final currentUri = state.uri.toString();
 
@@ -38,62 +38,83 @@ final GoRouter appRouter = GoRouter(
         currentUri.contains('/login') ||
         currentUri.contains('/register');
 
-    if (kDebugMode) {
-      debugPrint(
-        'Router redirect => loggedIn: $isLoggedIn, matched: $matchedLocation, uri: $currentUri, isAuthRoute: $isAuthRoute',
-      );
+    // อนุญาต Splash เสมอ
+    if (matchedLocation == '/') {
+      return null;
     }
 
-    // Evaluate date-only boundary to detect a new day on app open/resume.
+    // ตรวจวันใหม่
     appProvider.evaluateDayBoundaryOnAppOpen();
 
-    // If not logged in, allow only auth routes (login/register).
+    // ยังไม่ login → ไป login
     if (!isLoggedIn && !isAuthRoute && !isLandingPage) {
       return Routes.login;
     }
 
-    // Keep login as first screen on app start.
+    //  อยู่หน้า login แล้ว → ไม่ต้อง redirect
     if (matchedLocation == Routes.login) {
       return null;
     }
 
-    // Redirect once per day to Mood screen when a new day is detected.
-    if (isLoggedIn && appProvider.shouldRedirectToMoodForNewDay) {
-      if (matchedLocation != Routes.mood) {
-        return Routes.mood;
-      }
+    // redirect ไป mood ถ้าเป็นวันใหม่
+    if (isLoggedIn &&
+        appProvider.shouldRedirectToMoodForNewDay &&
+        matchedLocation != Routes.mood &&
+        matchedLocation != Routes.profile) {
+      return Routes.mood;
+    }
 
-      // When user has reached Mood, persist lastActiveDate and stop redirecting.
+    // mark ว่าเข้า mood แล้ว
+    if (matchedLocation == Routes.mood) {
       unawaited(appProvider.markMoodRedirectHandled());
+    }
+
+    // login แล้ว → ห้ามกลับ login
+    if (isLoggedIn && isAuthRoute) {
+      return Routes.home;
     }
 
     return null;
   },
+
   routes: [
-    GoRoute(path: Routes.mood, builder: (context, state) => const MoodScreen()),
-    GoRoute(path: Routes.home, builder: (context, state) => const HomeScreen()),
+    /// Splash Screen (หน้าแรกสุด)
+    GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+
+    ///  Login
     GoRoute(
-      path: Routes.progress,
-      builder: (context, state) => const ProgressScreen(),
+      path: Routes.login,
+      builder: (context, state) => const LoginScreen(),
     ),
+
+    /// Register
+    GoRoute(
+      path: Routes.register,
+      builder: (context, state) => const LoginScreen(isLogin: false),
+    ),
+
+    /// Home
+    GoRoute(path: Routes.home, builder: (context, state) => const HomeScreen()),
+
+    ///  Mood
+    GoRoute(path: Routes.mood, builder: (context, state) => const MoodScreen()),
+
+    /// Profile
     GoRoute(
       path: Routes.profile,
       builder: (context, state) => const ProfileScreen(),
     ),
 
+    /// Progress
+    GoRoute(
+      path: Routes.progress,
+      builder: (context, state) => const ProgressScreen(),
+    ),
+
+    ///  Landing Page
     GoRoute(
       path: '/landingpage',
       builder: (context, state) => const LandingPage(),
-    ),
-
-    // auth routes
-    GoRoute(
-      path: Routes.login,
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: Routes.register,
-      builder: (context, state) => const LoginScreen(isLogin: false),
     ),
   ],
 );

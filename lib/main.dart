@@ -43,6 +43,7 @@ class MoveItApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
+
         title: 'MoveIT',
         theme: AppTheme.light(),
         routerConfig: appRouter,
