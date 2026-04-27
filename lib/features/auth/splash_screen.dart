@@ -10,7 +10,6 @@ class SplashScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: GestureDetector(
-        behavior: HitTestBehavior.opaque,
         onTap: () {
           context.go(Routes.login);
         },

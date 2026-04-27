@@ -6,8 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/providers/app_provider.dart';
-import 'package:flutter/foundation.dart';
-import '../../core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -27,7 +25,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  bool _obscurePassword = true;
+  final bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -357,9 +355,10 @@ class _LabeledInputField extends StatelessWidget {
     required this.controller,
     required this.hintText,
     this.keyboardType = TextInputType.text,
+    this.enabled = true,
+
     this.obscureText = false,
     this.suffixIcon,
-    this.enabled = true,
   });
 
   @override

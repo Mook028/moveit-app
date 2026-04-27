@@ -88,16 +88,8 @@ class _LoginScreenState extends State<LoginScreen> {
         final name = user.displayName ?? user.email ?? '';
         appProv.setUserName(name);
       }
-
       if (mounted) {
-        if (widget.isLogin) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const MoodScreen()),
-          );
-        } else {
-          context.go(Routes.login);
-        }
+        context.go(Routes.mood);
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {

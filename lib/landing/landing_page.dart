@@ -18,7 +18,7 @@ class LandingPage extends StatelessWidget {
         child: Column(
           children: [
             // 🔥 HERO SECTION
-            Container(
+            SizedBox(
               width: double.infinity,
               height: 500,
               child: Stack(

@@ -1,5 +1,5 @@
 class Routes {
-  static const String mood = '/';
+  static const String mood = '/mood';
   static const String home = '/home';
   static const String progress = '/progress';
   static const String profile = '/profile';

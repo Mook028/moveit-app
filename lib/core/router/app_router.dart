@@ -1,10 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../constants/routes.dart';
 import '../providers/app_provider.dart';
+import '../../features/auth/auth_provider.dart' as app_auth;
 import '../../features/mood/mood_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/progress/progress_screen.dart';
@@ -12,109 +15,56 @@ import '../../features/profile/profile_screen.dart';
 
 // auth
 import '../../features/auth/login_screen.dart';
-import '../../features/auth/auth_provider.dart';
-
-import '../../landing/landing_page.dart';
 import '../../features/auth/splash_screen.dart';
 
+import '../../landing/landing_page.dart';
+
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/', //  Splash
+  initialLocation: '/',
 
   redirect: (context, state) {
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    final appProvider = Provider.of<AppProvider>(context, listen: false);
+    final appProvider = context.read<AppProvider>();
+    final auth = context.read<app_auth.AuthProvider>();
+
     final isLoggedIn = auth.user != null;
+    final location = state.matchedLocation;
 
-    final matchedLocation = state.matchedLocation;
-    final currentUri = state.uri.toString();
+    final isAuthRoute = location == Routes.login || location == Routes.register;
 
-    final isLandingPage =
-        matchedLocation == '/landingpage' ||
-        currentUri.contains('/landingpage');
+    // Splash
+    if (location == '/') return null;
 
-    final isAuthRoute =
-        matchedLocation == Routes.login ||
-        matchedLocation == Routes.register ||
-        currentUri.contains('/login') ||
-        currentUri.contains('/register');
+    // อนุญาต login/register
+    if (isAuthRoute) return null;
 
-    // อนุญาต Splash เสมอ
-    if (matchedLocation == '/') {
-      return null;
-    }
+    // ยังไม่ login
+    if (!isLoggedIn) return Routes.login;
 
-    // ตรวจวันใหม่
-    appProvider.evaluateDayBoundaryOnAppOpen();
-
-    // ยังไม่ login → ไป login
-    if (!isLoggedIn && !isAuthRoute && !isLandingPage) {
-      return Routes.login;
-    }
-
-    //  อยู่หน้า login แล้ว → ไม่ต้อง redirect
-    if (matchedLocation == Routes.login) {
-      return null;
-    }
-
-    // redirect ไป mood ถ้าเป็นวันใหม่
+    // mood logic
     if (isLoggedIn &&
         appProvider.shouldRedirectToMoodForNewDay &&
-        matchedLocation != Routes.mood &&
-        matchedLocation != Routes.profile) {
+        location != Routes.mood) {
       return Routes.mood;
     }
 
-    // mark ว่าเข้า mood แล้ว
-    if (matchedLocation == Routes.mood) {
+    if (location == Routes.mood && appProvider.shouldRedirectToMoodForNewDay) {
       unawaited(appProvider.markMoodRedirectHandled());
-    }
-
-    // login แล้ว → ห้ามกลับ login
-    if (isLoggedIn && isAuthRoute) {
-      return Routes.home;
     }
 
     return null;
   },
 
   routes: [
-    /// Splash Screen (หน้าแรกสุด)
-    GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
-
-    ///  Login
-    GoRoute(
-      path: Routes.login,
-      builder: (context, state) => const LoginScreen(),
-    ),
-
-    /// Register
+    GoRoute(path: '/', builder: (_, _) => const SplashScreen()),
+    GoRoute(path: Routes.login, builder: (_, _) => const LoginScreen()),
     GoRoute(
       path: Routes.register,
-      builder: (context, state) => const LoginScreen(isLogin: false),
+      builder: (_, _) => const LoginScreen(isLogin: false),
     ),
-
-    /// Home
-    GoRoute(path: Routes.home, builder: (context, state) => const HomeScreen()),
-
-    ///  Mood
-    GoRoute(path: Routes.mood, builder: (context, state) => const MoodScreen()),
-
-    /// Profile
-    GoRoute(
-      path: Routes.profile,
-      builder: (context, state) => const ProfileScreen(),
-    ),
-
-    /// Progress
-    GoRoute(
-      path: Routes.progress,
-      builder: (context, state) => const ProgressScreen(),
-    ),
-
-    ///  Landing Page
-    GoRoute(
-      path: '/landingpage',
-      builder: (context, state) => const LandingPage(),
-    ),
+    GoRoute(path: Routes.home, builder: (_, _) => const HomeScreen()),
+    GoRoute(path: Routes.mood, builder: (_, _) => const MoodScreen()),
+    GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen()),
+    GoRoute(path: Routes.progress, builder: (_, _) => const ProgressScreen()),
+    GoRoute(path: '/landingpage', builder: (_, _) => const LandingPage()),
   ],
 );
