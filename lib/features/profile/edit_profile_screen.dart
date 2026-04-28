@@ -37,7 +37,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final appProvider = context.read<AppProvider>();
     final firebaseUser = FirebaseAuth.instance.currentUser;
 
-    final firestoreName = appProvider.user.name.trim();
+    final firestoreName = appProvider.user?.name.trim() ?? '';
     _nameController.text = firestoreName;
     _usernameController.text = firestoreName;
     _emailController.text = firebaseUser?.email?.trim() ?? '';

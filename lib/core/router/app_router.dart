@@ -19,14 +19,23 @@ import '../../features/auth/splash_screen.dart';
 
 import '../../landing/landing_page.dart';
 
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    stream.listen((_) => notifyListeners());
+  }
+}
+
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
 
+  refreshListenable: GoRouterRefreshStream(
+    FirebaseAuth.instance.authStateChanges(),
+  ),
+
   redirect: (context, state) {
     final appProvider = context.read<AppProvider>();
-    final auth = context.read<app_auth.AuthProvider>();
-
-    final isLoggedIn = auth.user != null;
+    final user = FirebaseAuth.instance.currentUser;
+    final isLoggedIn = user != null;
     final location = state.matchedLocation;
 
     final isAuthRoute = location == Routes.login || location == Routes.register;
@@ -63,7 +72,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(path: Routes.home, builder: (_, _) => const HomeScreen()),
     GoRoute(path: Routes.mood, builder: (_, _) => const MoodScreen()),
-    GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen()),
+    GoRoute(path: Routes.profile, builder: (_, _) => ProfileScreen()),
     GoRoute(path: Routes.progress, builder: (_, _) => const ProgressScreen()),
     GoRoute(path: '/landingpage', builder: (_, _) => const LandingPage()),
   ],

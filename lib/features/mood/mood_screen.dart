@@ -47,7 +47,7 @@ class MoodScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Hello ${provider.user.name}!',
+                              'Hello ${provider.user?.name ?? ''}!',
                               style: Theme.of(context).textTheme.headlineLarge,
                             ),
                             const SizedBox(height: 8),

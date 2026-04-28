@@ -43,7 +43,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     try {
       setState(() => _loading = true);
 
-      final user = FirebaseAuth.instance.currentUser!;
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
       final cred = EmailAuthProvider.credential(
         email: user.email!,

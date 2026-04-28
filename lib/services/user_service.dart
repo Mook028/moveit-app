@@ -3,10 +3,15 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  Future<void> deleteUserProfile(String uid) async {
+    await _firestore.collection('users').doc(uid).delete();
+  }
 
   // Get user profile from Firestore
   Future<UserProfile?> getUserProfile(String uid) async {

@@ -17,27 +17,32 @@ import 'change_password_page.dart';
 import 'guidelines_page.dart';
 import 'contact_us_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/user_service.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final UserService _userService = UserService();
+  ProfileScreen({super.key});
 
   Future<void> _deleteAccount(BuildContext context) async {
     try {
+      final authProvider = context.read<local_auth.AuthProvider>();
+      final userService = _userService;
+
       final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-      if (user != null) {
-        await user.delete();
+      final uid = user.uid;
 
-        Navigator.of(context).popUntil((route) => route.isFirst);
+      //  ลบ Firestore
+      await userService.deleteUserProfile(uid);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Account deleted successfully")),
-        );
-      }
+      //  ลบ Auth
+      await authProvider.deleteAccount();
+
+      // หยุด function ทันที
+      return;
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: ${e.toString()}")));
+      print("DELETE ERROR: $e");
     }
   }
 
@@ -94,8 +99,8 @@ class ProfileScreen extends StatelessWidget {
                                 )
                               : Center(
                                   child: Text(
-                                    provider.user.name.isNotEmpty
-                                        ? provider.user.name[0]
+                                    provider.user?.name.isNotEmpty == true
+                                        ? provider.user!.name[0]
                                         : 'U',
                                     style: const TextStyle(
                                       fontSize: 48,
@@ -111,7 +116,7 @@ class ProfileScreen extends StatelessWidget {
 
                       // Name and subtitle
                       Text(
-                        provider.user.name,
+                        provider.user?.name ?? 'User',
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w900,
@@ -177,7 +182,7 @@ class ProfileScreen extends StatelessWidget {
 
                       // Settings cards
 
-                      // 🧾 My Account
+                      // My Account
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
@@ -223,7 +228,7 @@ class ProfileScreen extends StatelessWidget {
 
                       const SizedBox(height: 8),
 
-                      // 🔐 Settings & Security
+                      // Settings & Security
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
@@ -332,7 +337,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // 🆘 Support
+                      //  Support
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
@@ -476,7 +481,6 @@ class ProfileScreen extends StatelessWidget {
                                         Expanded(
                                           child: InkWell(
                                             onTap: () async {
-                                              Navigator.pop(context);
                                               await _deleteAccount(context);
                                             },
                                             child: const Padding(

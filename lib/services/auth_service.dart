@@ -91,4 +91,18 @@ class AuthService {
 
     await currentUser.updatePassword(newPassword.trim());
   }
+
+  // Delete account
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'user-not-found',
+        message: 'No authenticated user found.',
+      );
+    }
+
+    await user.delete(); // ลบจาก Firebase Auth
+  }
 }

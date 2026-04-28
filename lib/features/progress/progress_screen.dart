@@ -48,7 +48,7 @@ class ProgressScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Hello, ${provider.user.name} 👋',
+                          'Hello, ${provider.user?.name ?? 'User'} 👋',
                           style: Theme.of(context).textTheme.headlineMedium,
                         ),
 
@@ -65,7 +65,7 @@ class ProgressScreen extends StatelessWidget {
                                 : null,
                             child: provider.profileImagePath == null
                                 ? Text(
-                                    provider.user.name[0],
+                                    provider.user?.name.substring(0, 1) ?? 'U',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,

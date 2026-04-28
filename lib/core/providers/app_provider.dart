@@ -12,7 +12,7 @@ enum DayStatus { none, someComplete, allComplete, inProgress }
 class AppProvider extends ChangeNotifier {
   static const String _lastActiveDateKey = 'lastActiveDate';
 
-  late UserProfile user;
+  UserProfile? user;
   String? selectedMood;
   String? profileImagePath;
 
@@ -40,12 +40,20 @@ class AppProvider extends ChangeNotifier {
 
     final map = taskStatusMap.map((key, value) => MapEntry(key, value.index));
 
-    prefs.setString('task_status', jsonEncode(map));
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+
+    prefs.setString('task_status_$uid', jsonEncode(map));
   }
 
   Future<void> loadStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString('task_status');
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) return;
+
+    final data = prefs.getString('task_status_$uid');
+
+    taskStatusMap.clear();
 
     if (data != null) {
       final decoded = jsonDecode(data) as Map<String, dynamic>;
@@ -53,23 +61,25 @@ class AppProvider extends ChangeNotifier {
       taskStatusMap = decoded.map(
         (key, value) => MapEntry(key, DayStatus.values[value]),
       );
-
-      notifyListeners();
     }
+
+    notifyListeners();
   }
 
   Future<void> setProfileImage(String path) async {
     profileImagePath = path;
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profile_image', path);
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
 
+    await prefs.setString('profile_image_$uid', path);
     notifyListeners();
   }
 
   Future<void> loadProfileImage() async {
     final prefs = await SharedPreferences.getInstance();
-    profileImagePath = prefs.getString('profile_image');
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+    profileImagePath = prefs.getString('profile_image_$uid');
 
     notifyListeners();
   }
@@ -152,16 +162,14 @@ class AppProvider extends ChangeNotifier {
   }
 
   AppProvider() {
-    user = UserProfile(
-      name: 'User',
-      dailyStreak: 0,
-      totalTasks: 0,
-      reminderEnabled: true,
-    );
+    user = null;
+    dailyStreak = 0;
+    totalCompleted = 0;
+    reminderEnabled = true;
+
     _initializeUser();
     _initializeLastActiveDate();
   }
-
   DateTime _dateOnly(DateTime value) {
     return DateTime(value.year, value.month, value.day);
   }
@@ -175,18 +183,24 @@ class AppProvider extends ChangeNotifier {
     _isMoodConfirmed = false;
     tasks = [];
     hasNavigatedToStatsToday = false;
+    taskStatusMap.clear();
+    _completionHistoryDateKeys.clear();
+    _dailyStatus.clear();
   }
 
   Future<void> _initializeLastActiveDate() async {
     final prefs = await SharedPreferences.getInstance();
-    final storedMillis = prefs.getInt(_lastActiveDateKey);
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+    final key = 'lastActiveDate_$uid';
+
+    final storedMillis = prefs.getInt(key);
     final today = _dateOnly(DateTime.now());
 
     if (storedMillis == null) {
       _lastActiveDate = today;
       _hasCheckedDayBoundary = true;
       _shouldRedirectToMoodForNewDay = false;
-      await prefs.setInt(_lastActiveDateKey, today.millisecondsSinceEpoch);
+      await prefs.setInt(key, today.millisecondsSinceEpoch);
       notifyListeners();
       return;
     }
@@ -227,62 +241,115 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_lastActiveDateKey, today.millisecondsSinceEpoch);
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+    final key = 'lastActiveDate_$uid';
+    await prefs.setInt(key, today.millisecondsSinceEpoch);
   }
 
   void _initializeUser() {
     FirebaseAuth.instance.authStateChanges().listen((User? firebaseUser) async {
-      if (firebaseUser != null) {
-        _currentUserId = firebaseUser.uid;
+      //  RESET ทุกครั้งก่อนโหลด user ใหม่
+      user = null;
+      dailyStreak = 0;
+      totalCompleted = 0;
+      reminderEnabled = true;
 
-        final profile = await _userService.getUserProfile(firebaseUser.uid);
+      selectedMood = null;
+      profileImagePath = null;
+      taskStatusMap.clear();
 
-        // ดึงชื่อจาก Firebase ก่อนเสมอ
-        final displayName = firebaseUser.displayName;
+      _completionHistoryDateKeys.clear();
+      _dailyStatus.clear();
 
-        if (profile != null) {
-          final correctName = (displayName != null && displayName.isNotEmpty)
-              ? displayName
-              : profile.name;
+      tasks = [];
+      _isMoodConfirmed = false;
+      hasNavigatedToStatsToday = false;
 
-          user = profile.copyWith(name: correctName);
+      if (firebaseUser == null) {
+        notifyListeners();
+        return;
+      }
 
-          //  sync Firestore
-          if (profile.name != correctName) {
-            await _userService.updateUserFields(firebaseUser.uid, {
-              'name': correctName,
-            });
-          }
+      if (_currentUserId != firebaseUser.uid) {
+        _completionHistoryDateKeys.clear();
+        _dailyStatus.clear();
+        taskStatusMap.clear();
+      }
+      _currentUserId = firebaseUser.uid;
 
-          dailyStreak = user.dailyStreak;
-          totalCompleted = user.totalTasks;
-          reminderEnabled = user.reminderEnabled;
-        } else {
-          //  user ใหม่ → ใช้ displayName เท่านั้น
-          final correctName = (displayName != null && displayName.isNotEmpty)
-              ? displayName
-              : 'User';
+      await firebaseUser.reload();
+      final refreshedUser = FirebaseAuth.instance.currentUser;
+      if (refreshedUser == null) return;
 
-          user = UserProfile(name: correctName);
+      await loadMood();
+      await loadStatus();
+      await loadProfileImage();
 
-          await _userService.createUserProfile(firebaseUser.uid, correctName);
+      if (selectedMood != null) {
+        generateTasksByMood(selectedMood!);
+      }
+
+      final displayName = refreshedUser.displayName;
+
+      final profile = await _userService.getUserProfile(refreshedUser.uid);
+
+      if (profile != null) {
+        final correctName = (displayName != null && displayName.isNotEmpty)
+            ? displayName
+            : profile.name;
+
+        user = profile.copyWith(name: correctName);
+
+        if (profile.name != correctName) {
+          await _userService.updateUserFields(refreshedUser.uid, {
+            'name': correctName,
+          });
         }
 
-        await refreshCompletionHistory(notify: false);
-        notifyListeners();
+        dailyStreak = user?.dailyStreak ?? 0;
+        totalCompleted = user?.totalTasks ?? 0;
+        reminderEnabled = user?.reminderEnabled ?? true;
+      } else {
+        final correctName = (displayName != null && displayName.isNotEmpty)
+            ? displayName
+            : 'User';
+
+        user = UserProfile(name: correctName);
+
+        await _userService.createUserProfile(refreshedUser.uid, correctName);
       }
+
+      await refreshCompletionHistory(notify: false);
+      notifyListeners();
     });
+  }
+
+  Future<void> loadMood() async {
+    final prefs = await SharedPreferences.getInstance();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) return;
+
+    selectedMood = prefs.getString('selected_mood_$uid');
+
+    if (selectedMood != null) {
+      _isMoodConfirmed = true;
+      generateTasksByMood(selectedMood!);
+    }
   }
 
   Future<void> refreshCompletionHistory({bool notify = true}) async {
     if (_currentUserId == null) return;
 
+    // สำคัญมาก: ล้าง state ก่อนโหลดใหม่
+    _completionHistoryDateKeys.clear();
+    _dailyStatus.clear();
+
     final completionHistory = await _userService.getCompletionHistory(
       _currentUserId!,
     );
-    _completionHistoryDateKeys
-      ..clear()
-      ..addAll(completionHistory.map(_toDateKey));
+
+    _completionHistoryDateKeys.addAll(completionHistory.map(_toDateKey));
 
     for (final completionDate in completionHistory) {
       _dailyStatus[formatDateKey(completionDate)] = DayStatus.allComplete;
@@ -315,6 +382,8 @@ class AppProvider extends ChangeNotifier {
       return status;
     }
 
+    if (!_isMoodConfirmed) return null;
+
     if (_completionHistoryDateKeys.contains(_toDateKey(date))) {
       return DayStatus.allComplete;
     }
@@ -326,10 +395,16 @@ class AppProvider extends ChangeNotifier {
     return getStatusForDate(date);
   }
 
-  void setMood(String mood) {
+  void setMood(String mood) async {
     if (_isMoodConfirmed) return;
 
     selectedMood = mood;
+
+    final prefs = await SharedPreferences.getInstance();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      await prefs.setString('selected_mood_$uid', mood);
+    }
 
     hasNavigatedToStatsToday = false;
     notifyListeners();
@@ -463,14 +538,19 @@ class AppProvider extends ChangeNotifier {
     }
 
     // Prevent duplicate updates for the same day
-    if (user.lastCompletedDate != null) {
-      final lastCompleted = DateTime(
-        user.lastCompletedDate!.year,
-        user.lastCompletedDate!.month,
-        user.lastCompletedDate!.day,
-      );
-      if (lastCompleted == today) {
-        return; // Already completed today
+    if (user?.lastCompletedDate != null) {
+      final lastDate = user?.lastCompletedDate;
+
+      if (lastDate != null) {
+        final lastCompleted = DateTime(
+          lastDate.year,
+          lastDate.month,
+          lastDate.day,
+        );
+
+        if (lastCompleted == today) {
+          return;
+        }
       }
     }
 
@@ -482,11 +562,15 @@ class AppProvider extends ChangeNotifier {
     int newStreak = await _calculateStreak(_currentUserId!, today);
 
     // Update user profile
-    user = user.copyWith(dailyStreak: newStreak, lastCompletedDate: today);
+    user = user?.copyWith(dailyStreak: newStreak, lastCompletedDate: today);
     dailyStreak = newStreak;
 
     // Save to Firestore
-    await _userService.updateUserProfile(_currentUserId!, user);
+    if (user != null) {
+      await _userService.updateUserProfile(_currentUserId!, user!);
+    }
+
+    notifyListeners();
   }
 
   /// Calculates the current streak based on completion history
@@ -532,28 +616,37 @@ class AppProvider extends ChangeNotifier {
   }
 
   void toggleReminder() async {
+    if (user == null) return;
+
     reminderEnabled = !reminderEnabled;
-    user = user.copyWith(reminderEnabled: reminderEnabled);
-    if (_currentUserId != null) {
-      await _userService.updateUserProfile(_currentUserId!, user);
+    user = user!.copyWith(reminderEnabled: reminderEnabled);
+
+    if (_currentUserId != null && user != null) {
+      await _userService.updateUserProfile(_currentUserId!, user!);
     }
+
     notifyListeners();
   }
 
   /// update stored user name (e.g. after auth changes)
   void setUserName(String name) async {
-    user = user.copyWith(name: name);
-    if (_currentUserId != null) {
-      await _userService.updateUserProfile(_currentUserId!, user);
+    if (user == null) return;
+
+    user = user!.copyWith(name: name);
+
+    if (_currentUserId != null && user != null) {
+      await _userService.updateUserProfile(_currentUserId!, user!);
     }
+
     notifyListeners();
   }
 
   Future<void> updateProfileName(String name) async {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty || _currentUserId == null) return;
+    if (user == null) return;
 
-    user = user.copyWith(name: trimmedName);
+    user = user!.copyWith(name: trimmedName);
     notifyListeners();
 
     await _userService.updateUserFields(_currentUserId!, {'name': trimmedName});
@@ -566,7 +659,9 @@ class AppProvider extends ChangeNotifier {
       _currentUserId!,
       image,
     );
-    user = user.copyWith(photoUrl: photoUrl);
+
+    if (user == null) return;
+    user = user!.copyWith(photoUrl: photoUrl);
     notifyListeners();
 
     await _userService.updateUserFields(_currentUserId!, {
@@ -581,7 +676,8 @@ class AppProvider extends ChangeNotifier {
 
     // Update local user object using copyWith
     if (name != null && name.trim().isNotEmpty) {
-      user = user.copyWith(name: name.trim());
+      if (user == null) return;
+      user = user!.copyWith(name: name.trim());
     }
 
     // Notify listeners immediately after updating user object

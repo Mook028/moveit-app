@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/auth_service.dart';
+import '../../services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -73,7 +75,9 @@ class AuthProvider with ChangeNotifier {
 
     _isLoading = true;
     notifyListeners();
+
     print("TRIMMED NAME: $trimmedName");
+
     try {
       final credential = await _authService.register(
         trimmedEmail,
@@ -81,7 +85,14 @@ class AuthProvider with ChangeNotifier {
         displayName: trimmedName,
       );
 
-      // Firebase automatically signs in a newly registered user.
+      final firebaseUser = credential.user;
+      if (firebaseUser == null) return;
+
+      final uid = firebaseUser.uid;
+
+      //  สำคัญมาก: สร้าง profile ใหม่ใน Firestore
+      await UserService().createUserProfile(uid, trimmedName);
+
       _user = credential.user;
       notifyListeners();
     } on FirebaseAuthException {
@@ -93,7 +104,16 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> logout() async {
+    //  logout Firebase
     await _authService.logout();
+
+    //  ล้าง local storage
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    //  reset state
+    _user = null;
+    notifyListeners();
   }
 
   Future<void> resetPassword(String email) async {
@@ -105,6 +125,19 @@ class AuthProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> deleteAccount() async {
+    //  ลบ Firebase Auth
+    await _authService.deleteAccount();
+
+    //  ล้าง local storage (สำคัญมาก)
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    //  reset state
+    _user = null;
+    notifyListeners();
   }
 
   Future<void> updateCredentials({
