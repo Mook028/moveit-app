@@ -9,6 +9,7 @@ import '../../core/providers/app_provider.dart';
 import '../mood/mood_screen.dart';
 import 'auth_provider.dart';
 import 'forgot_password_page.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 
 class LoginScreen extends StatefulWidget {
   final bool isLogin;
@@ -53,6 +54,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text.trim();
     final name = _nameController.text.trim();
 
+    print("NAME FROM INPUT: $name");
+    print("IS LOGIN: ${widget.isLogin}");
+
     final validationError = _validateInputs(
       email: email,
       password: password,
@@ -83,10 +87,12 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       // sync name to app provider
-      final user = auth.user;
-      if (user != null) {
-        final name = user.displayName ?? user.email ?? '';
-        appProv.setUserName(name);
+      final displayName = fb.FirebaseAuth.instance.currentUser?.displayName;
+
+      print("DISPLAY USED IN LOGIN: $displayName");
+
+      if (displayName != null && displayName.isNotEmpty) {
+        appProv.setUserName(displayName);
       }
       if (mounted) {
         context.go(Routes.mood);

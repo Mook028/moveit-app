@@ -54,7 +54,9 @@ class AuthProvider with ChangeNotifier {
   Future<void> register(String email, String password, {String? name}) async {
     final trimmedEmail = email.trim();
     final trimmedPassword = password.trim();
-    final trimmedName = name?.trim();
+    final trimmedName = (name != null && name.trim().isNotEmpty)
+        ? name.trim()
+        : 'User';
 
     if (trimmedEmail.isEmpty) {
       throw FirebaseAuthException(
@@ -71,6 +73,7 @@ class AuthProvider with ChangeNotifier {
 
     _isLoading = true;
     notifyListeners();
+    print("TRIMMED NAME: $trimmedName");
     try {
       final credential = await _authService.register(
         trimmedEmail,

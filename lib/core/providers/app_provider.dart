@@ -234,17 +234,40 @@ class AppProvider extends ChangeNotifier {
     FirebaseAuth.instance.authStateChanges().listen((User? firebaseUser) async {
       if (firebaseUser != null) {
         _currentUserId = firebaseUser.uid;
+
         final profile = await _userService.getUserProfile(firebaseUser.uid);
+
+        // ดึงชื่อจาก Firebase ก่อนเสมอ
+        final displayName = firebaseUser.displayName;
+
         if (profile != null) {
-          user = profile;
-          dailyStreak = profile.dailyStreak;
-          totalCompleted = profile.totalTasks;
-          reminderEnabled = profile.reminderEnabled;
+          final correctName = (displayName != null && displayName.isNotEmpty)
+              ? displayName
+              : profile.name;
+
+          user = profile.copyWith(name: correctName);
+
+          //  sync Firestore
+          if (profile.name != correctName) {
+            await _userService.updateUserFields(firebaseUser.uid, {
+              'name': correctName,
+            });
+          }
+
+          dailyStreak = user.dailyStreak;
+          totalCompleted = user.totalTasks;
+          reminderEnabled = user.reminderEnabled;
         } else {
-          // Create new profile
-          user = UserProfile(name: firebaseUser.displayName ?? 'User');
-          await _userService.createUserProfile(firebaseUser.uid, user.name);
+          //  user ใหม่ → ใช้ displayName เท่านั้น
+          final correctName = (displayName != null && displayName.isNotEmpty)
+              ? displayName
+              : 'User';
+
+          user = UserProfile(name: correctName);
+
+          await _userService.createUserProfile(firebaseUser.uid, correctName);
         }
+
         await refreshCompletionHistory(notify: false);
         notifyListeners();
       }

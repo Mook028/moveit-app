@@ -25,9 +25,15 @@ class AuthService {
       password: password,
     );
 
-    if (displayName != null && displayName.trim().isNotEmpty) {
-      await credential.user?.updateDisplayName(displayName.trim());
-    }
+    // บังคับ set name เสมอ
+    await credential.user?.updateDisplayName(
+      (displayName != null && displayName.trim().isNotEmpty)
+          ? displayName.trim()
+          : 'User',
+    );
+
+    // reload ให้ค่า update จริง
+    await credential.user?.reload();
 
     return credential;
   }
