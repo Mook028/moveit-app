@@ -188,6 +188,12 @@ class AppProvider extends ChangeNotifier {
     _dailyStatus.clear();
   }
 
+  void _resetDailyOnly() {
+    tasks = [];
+    _isMoodConfirmed = false;
+    hasNavigatedToStatsToday = false;
+  }
+
   Future<void> _initializeLastActiveDate() async {
     final prefs = await SharedPreferences.getInstance();
     final uid = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
@@ -211,7 +217,7 @@ class AppProvider extends ChangeNotifier {
     _hasCheckedDayBoundary = true;
 
     if (!_isSameDate(_lastActiveDate!, today)) {
-      _resetDailyStateForNewDay();
+      _resetDailyOnly();
       _shouldRedirectToMoodForNewDay = true;
     } else {
       _shouldRedirectToMoodForNewDay = false;
@@ -226,7 +232,7 @@ class AppProvider extends ChangeNotifier {
     final today = _dateOnly(DateTime.now());
     if (!_isSameDate(_lastActiveDate!, today) &&
         !_shouldRedirectToMoodForNewDay) {
-      _resetDailyStateForNewDay();
+      _resetDailyOnly();
       _shouldRedirectToMoodForNewDay = true;
       notifyListeners();
     }
