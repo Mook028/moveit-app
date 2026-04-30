@@ -43,7 +43,7 @@ if (releaseTasksRequested && !hasReleaseSigningConfig) {
 }
 
 android {
-    namespace = "com.moveit.dailyworkout.app28"
+    namespace = "com.mfu.moveitv2"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -59,7 +59,7 @@ android {
 
     defaultConfig {
         // Application ID for MoveIT app on Play Store
-        applicationId = "com.moveit.dailyworkout.app28"
+        applicationId = "com.mfu.moveitv2"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

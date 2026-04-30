@@ -1,4 +1,4 @@
-package com.moveit.dailyworkout.app28
+package com.mfu.moveitv2
 
 import io.flutter.embedding.android.FlutterActivity
 

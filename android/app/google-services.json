@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:495135160328:android:d71c22930fc29cdfe8b9bd",
+        "mobilesdk_app_id": "1:495135160328:android:a1cfd6422247bc91e8b9bd",
         "android_client_info": {
-          "package_name": "com.moveit.dailyworkout.app28"
+          "package_name": "com.mfu.moveitv2"
         }
       },
       "oauth_client": [],
