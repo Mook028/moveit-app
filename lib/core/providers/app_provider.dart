@@ -267,11 +267,11 @@ class AppProvider extends ChangeNotifier {
       _completionHistoryDateKeys.clear();
       _dailyStatus.clear();
 
-      tasks = [];
-      _isMoodConfirmed = false;
-      hasNavigatedToStatsToday = false;
-
       if (firebaseUser == null) {
+        tasks = [];
+        _isMoodConfirmed = false;
+        selectedMood = null;
+
         notifyListeners();
         return;
       }
@@ -288,12 +288,21 @@ class AppProvider extends ChangeNotifier {
       if (refreshedUser == null) return;
 
       await loadMood();
-      await loadStatus();
-      await loadProfileImage();
+      await loadTasks();
 
-      if (selectedMood != null) {
+      if (tasks.isNotEmpty) {
+        _isMoodConfirmed = true;
+      }
+      if (tasks.isNotEmpty && selectedMood == null) {
+        selectedMood = tasks.first.mood;
+      }
+
+      if (tasks.isEmpty && selectedMood != null && _isMoodConfirmed) {
         generateTasksByMood(selectedMood!);
       }
+
+      await loadStatus();
+      await loadProfileImage();
 
       final displayName = refreshedUser.displayName;
 
@@ -337,11 +346,53 @@ class AppProvider extends ChangeNotifier {
     if (uid == null) return;
 
     selectedMood = prefs.getString('selected_mood_$uid');
+    _isMoodConfirmed = prefs.getBool('mood_confirmed_$uid') ?? false;
+  }
 
-    if (selectedMood != null) {
-      _isMoodConfirmed = true;
-      generateTasksByMood(selectedMood!);
-    }
+  Future<void> saveTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final data = tasks
+        .map(
+          (t) => {
+            'id': t.id,
+            'title': t.title,
+            'completed': t.completed,
+            'mood': t.mood,
+            'duration': t.duration,
+          },
+        )
+        .toList();
+
+    print("SAVE TASKS: $data");
+    await prefs.setString('tasks_$uid', jsonEncode(data));
+  }
+
+  Future<void> loadTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final data = prefs.getString('tasks_$uid');
+
+    print("TASK DATA: $data");
+    if (data == null) return;
+
+    final decoded = jsonDecode(data) as List;
+
+    tasks = decoded
+        .map(
+          (e) => Task(
+            id: e['id'],
+            title: e['title'],
+            completed: e['completed'],
+            mood: e['mood'],
+            duration: e['duration'],
+          ),
+        )
+        .toList();
   }
 
   Future<void> refreshCompletionHistory({bool notify = true}) async {
@@ -416,11 +467,20 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void confirmMood() {
+  void confirmMood() async {
     if (selectedMood != null) {
       generateTasksByMood(selectedMood!);
     }
+
     _isMoodConfirmed = true;
+
+    final prefs = await SharedPreferences.getInstance();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      await prefs.setBool('mood_confirmed_$uid', true);
+    }
+
+    await saveTasks();
     notifyListeners();
   }
 
@@ -475,7 +535,7 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleTask(String id) {
+  Future<void> toggleTask(String id) async {
     final index = tasks.indexWhere((t) => t.id == id);
     if (index != -1) {
       final task = tasks[index];
@@ -483,10 +543,8 @@ class AppProvider extends ChangeNotifier {
 
       // Update total completed count
       if (task.completed) {
-        // Task was just uncompleted
         totalCompleted = (totalCompleted - 1).clamp(0, double.infinity).toInt();
       } else {
-        // Task was just completed
         totalCompleted += 1;
       }
 
@@ -501,6 +559,8 @@ class AppProvider extends ChangeNotifier {
       } else {
         setDayStatus(DateTime.now(), DayStatus.inProgress);
       }
+
+      await saveTasks();
 
       notifyListeners();
     }
@@ -527,6 +587,7 @@ class AppProvider extends ChangeNotifier {
 
     updateDayStatus(DateTime.now(), tasks, notify: false);
 
+    await saveTasks();
     notifyListeners();
   }
 
